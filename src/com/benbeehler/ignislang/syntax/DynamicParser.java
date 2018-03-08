@@ -41,8 +41,10 @@ public class DynamicParser extends Parser {
 						SyntaxBlock b = this.getBlock().getSubblocks().stream()
 								.filter(bl -> bl.getId().equals(id)).findFirst().get();
 						b.setMaster(this.getBlock());
-						DynamicParser parser = new DynamicParser(b, this.getRuntime());
-						parser.start();
+						if(b.isExecute()) {
+							DynamicParser parser = new DynamicParser(b, this.getRuntime());
+							parser.start();
+						}
 					}
 				}
 			} else if(this.getBlock().getSubblocks()

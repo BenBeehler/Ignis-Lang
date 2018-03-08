@@ -206,8 +206,7 @@ public class SyntaxHandler {
 		int i = 0;
 		for(String str : spl) {
 			IVariable obj = ValueHandler.getValue(str, parser.getBlock());
-			func.getParameters().clear();
-			func.getParameters().add(i, obj);
+			func.getParameters().get(i).setValue(obj.getValue());
 			
 			i++;
 		}

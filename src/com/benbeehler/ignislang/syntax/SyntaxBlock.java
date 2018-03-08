@@ -113,6 +113,10 @@ public class SyntaxBlock {
 	public void setMaster(SyntaxBlock master) {
 		this.getSubblocks().addAll(master.getSubblocks());
 		this.getVariables().addAll(master.getVariables());
+		
+		if(this.getRuntime() != null) {
+			this.getSubblocks().addAll(this.getRuntime().getNecessary());
+		}
 		this.master = master;
 	}
 }
