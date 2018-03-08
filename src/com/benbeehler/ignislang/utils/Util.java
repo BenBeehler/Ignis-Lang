@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 
 import com.benbeehler.ignislang.exception.ErrorHandler;
 import com.benbeehler.ignislang.exception.IRuntimeException;

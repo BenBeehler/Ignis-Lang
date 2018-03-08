@@ -42,6 +42,7 @@ public class IRuntime {
 		
 		main = parser.getMain();
 		main.getSubblocks().addAll(ValueHandler.functions);
+		
 		developObjectProps();
 	}
 	

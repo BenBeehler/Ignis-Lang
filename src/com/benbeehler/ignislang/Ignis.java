@@ -17,15 +17,12 @@ public class Ignis {
 		
 		IRuntime main = 
 				new IRuntime(new File("c:/users/benbe/desktop/ignis-script.ig"));
-		long t = time();
+		
 		try {
 			main.start();
 		} catch(IRuntimeException e) {
 			e.printStackTrace();
-		}
-		long end = time();
-		long finished = end-t;
-		//System.out.println(finished/1000000 + "ms");
+		};
 	}
 	
 	public static long time() {

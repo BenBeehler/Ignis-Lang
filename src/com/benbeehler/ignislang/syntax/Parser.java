@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.benbeehler.ignislang.exception.ErrorHandler;
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.objects.ICondition;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IObject;
@@ -26,6 +27,8 @@ public class Parser {
 	private List<IFunction> functions = 
 			new ArrayList<>();
 	private List<IModule> modules = 
+			new ArrayList<>();
+	private List<ICondition> conditions = 
 			new ArrayList<>();
 	
 	private IRuntime runtime;
@@ -84,6 +87,10 @@ public class Parser {
 								.replaceFirst("object", "").trim();
 							
 						IObject obj = new IObject(dec);
+						block = obj;
+					} else if(dec.contains("if")) {
+						ICondition obj = SyntaxHandler.parseCondition(ln, this);
+						obj.setName("if-statement:" + obj.getId());
 						block = obj;
 					}
 						

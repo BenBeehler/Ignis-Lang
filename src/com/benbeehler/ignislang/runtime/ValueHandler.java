@@ -76,6 +76,29 @@ public class ValueHandler {
 		
 		functions.add(function);
 		
+		SyntaxBlock eBlock = new SyntaxBlock();
+		IFunction equals = new IFunction(eBlock);
+		equals.setName("Equals");
+		equals.setNativ(true);
+		equals.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		equals.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		equals.setRunnable(() -> {
+			if(equals.getParameters().size() == 2) {
+				Object one = equals.getParameters().get(0).getValue();
+				Object two = equals.getParameters().get(1).getValue();
+				
+				equals.setReturnValue(one.equals(two));
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count for equals");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(equals);
+		
 		SyntaxBlock pBlock = new SyntaxBlock();
 		IFunction println = new IFunction(pBlock);
 		println.setName("IO.Println");
@@ -252,6 +275,7 @@ public class ValueHandler {
 	public static IVariable getValue(String str, SyntaxBlock block) throws IRuntimeException {
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
 		variable.setValue(new Object());
+
 		
 		if(isInteger(str, block.getVariables())) {
 			variable.setValue(getInteger(str, block.getVariables()));
@@ -266,6 +290,12 @@ public class ValueHandler {
 			IVariable b = block.getVariables().stream()
 					.filter(bl -> bl.getName().equals(str)).findAny().get();
 			variable = b;
+		} else if(block.getSubblocks()
+				.stream().filter(b -> b.getName()
+						.equals(str.split(" ")[0]))
+				.findAny().isPresent()) {
+			IFunction func = SyntaxHandler.parseFunction(str, block.getParser());
+			variable.setValue(func.getReturnValue());
 		} else if(str.startsWith("new")) {
 			String inst = str.replaceFirst("new", "").trim();
 			

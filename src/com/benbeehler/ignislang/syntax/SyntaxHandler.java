@@ -2,12 +2,14 @@ package com.benbeehler.ignislang.syntax;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
 import com.benbeehler.ignislang.exception.ISyntaxException;
+import com.benbeehler.ignislang.objects.ICondition;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IObject;
 import com.benbeehler.ignislang.objects.IVariable;
 import com.benbeehler.ignislang.objects.Scope;
 import com.benbeehler.ignislang.runtime.ValueHandler;
+import com.benbeehler.ignislang.utils.Util;
 
 public class SyntaxHandler {
 
@@ -191,7 +193,7 @@ public class SyntaxHandler {
 		}
 	}
 	
-	public static void parseFunctionCall(String line, DynamicParser parser) throws IRuntimeException {
+	public static IFunction parseFunctionCall(String line, DynamicParser parser) throws IRuntimeException {
 		String[] split = line.split(" ");
 		String fName = split[0];
 		
@@ -204,13 +206,24 @@ public class SyntaxHandler {
 		line = line.replaceFirst(fName, "").trim();
 		String[] spl = line.split(SyntaxHandler.COMMA);
 		int i = 0;
-		for(String str : spl) {
-			IVariable obj = ValueHandler.getValue(str, parser.getBlock());
-			func.getParameters().get(i).setValue(obj.getValue());
-			
-			i++;
+		if(func.getParameters().size() > 0) {
+			for(String str : spl) {
+				IVariable obj = ValueHandler.getValue(str, parser.getBlock());
+				func.getParameters().get(i).setValue(obj.getValue());
+				
+				i++;
+			}
 		}
 		
 		func.execute();
+		return func;
+	}
+	
+	public static ICondition parseCondition(String line, Parser parser) {
+		ICondition condition = new ICondition();
+		line = line.replaceFirst("if", "").replaceFirst("ref", "").trim();
+		condition.setRawBoolean(line);
+		condition.setId(Util.generateID());
+		return condition;
 	}
 }

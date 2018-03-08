@@ -15,6 +15,7 @@ public class IFunction extends SyntaxBlock {
 	private List<IVariable> variables = new ArrayList<>();
 	private List<IVariable> parameters = new ArrayList<>();
 	private SyntaxBlock block;
+	private Object returnValue;
 	
 	public IFunction(SyntaxBlock body) {
 		super();
@@ -100,5 +101,13 @@ public class IFunction extends SyntaxBlock {
 
 	public void setParameters(List<IVariable> parameters) {
 		this.parameters = parameters;
+	}
+
+	public Object getReturnValue() {
+		return returnValue;
+	}
+
+	public void setReturnValue(Object returnValue) {
+		this.returnValue = returnValue;
 	}
 }
