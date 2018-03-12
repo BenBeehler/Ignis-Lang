@@ -3,6 +3,7 @@ A simple event driven procedural scalable language built on top of the JVM.
 # Basic Calculator Example
 <br>
 ```ruby
+
 ref module Main
 	ref fn auto Main : void
 		string operator = IO.Read
