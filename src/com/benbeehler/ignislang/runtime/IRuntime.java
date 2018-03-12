@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
-import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IObject;
 import com.benbeehler.ignislang.syntax.DynamicParser;
@@ -34,11 +33,11 @@ public class IRuntime {
 		Parser parser = new Parser(main, this);
 		parser.start();
 		
-		for(IFunction func : parser.getFunctions()) {
+		/*for(IFunction func : parser.getFunctions()) {
 			if(func.isExecute()) {
 				func.execute();
 			}
-		}
+		}*/
 		
 		main = parser.getMain();
 		main.getSubblocks().addAll(ValueHandler.functions);

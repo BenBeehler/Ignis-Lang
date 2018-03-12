@@ -17,6 +17,6 @@ public class ICondition extends SyntaxBlock {
 	
 	@Override
 	public boolean isExecute() {
-		return ValueHandler.getBoolean(rawBoolean);
+		return ValueHandler.getBoolean(rawBoolean, this.getDynParser());
 	}
 }

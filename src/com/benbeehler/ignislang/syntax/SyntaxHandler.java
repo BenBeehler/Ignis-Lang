@@ -3,6 +3,7 @@ package com.benbeehler.ignislang.syntax;
 import com.benbeehler.ignislang.exception.IRuntimeException;
 import com.benbeehler.ignislang.exception.ISyntaxException;
 import com.benbeehler.ignislang.objects.ICondition;
+import com.benbeehler.ignislang.objects.IForLoop;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IObject;
@@ -116,6 +117,46 @@ public class SyntaxHandler {
 					/*if(!ValueHandler.isValid(value, variable.getType()))
 						throw new IRuntimeException("Given variable value does not match assigned type.");*/
 					Object val = ValueHandler.getValue(value).getValue();
+					if(!ValueHandler.isValid(val.toString(), variable.getType(), parser.getCurrent())) {
+						throw new IRuntimeException("Invalid value for specified type 2");
+					}
+					variable.setValue(val);
+				}
+				
+				return variable;
+			} else {
+				throw new ISyntaxException("Unknown type in variable "
+						+ "declaration", parser);
+			}
+		} else {
+			throw new ISyntaxException("Type must be specified in variable"
+					+ " declaration", parser);
+		}
+	}
+	
+	public static IVariable parseVariable(String string, DynamicParser parser) throws IRuntimeException {
+		string = string.trim();
+		String props = SyntaxHandler.getUntil(string, "=");
+		String[] split = props.split(" ");
+		
+		if(split.length == 2) {
+			String vType = split[0];
+			String name = split[1];
+			
+			if(ValueHandler.containsObject(vType)) {
+				IVariable variable = new IVariable(name, Scope.GLOBAL);
+				variable.setType(ValueHandler.getTypeByName(vType));
+				
+				String value = string.replace(props, "")
+						.replaceFirst("=", "").trim();
+				
+				if(!value.equals("")) {
+					/*if(!ValueHandler.isValid(value, variable.getType()))
+						throw new IRuntimeException("Given variable value does not match assigned type.");*/
+					Object val = ValueHandler.getValue(value, parser).getValue();
+					if(!ValueHandler.isValid(val.toString(), variable.getType(), parser.getBlock())) {
+						throw new IRuntimeException("Invalid value for specified type 2");
+					}
 					variable.setValue(val);
 				}
 				
@@ -179,6 +220,9 @@ public class SyntaxHandler {
 				
 				if(!value.equals("")) {
 					Object val = ValueHandler.getValue(value).getValue();
+					if(!ValueHandler.isValid(val.toString(), variable.getType(), obj)) {
+						throw new IRuntimeException("Invalid value for specified type 3");
+					}
 					variable.setValue(val);
 				}
 				
@@ -222,6 +266,14 @@ public class SyntaxHandler {
 	public static ICondition parseCondition(String line, Parser parser) {
 		ICondition condition = new ICondition();
 		line = line.replaceFirst("if", "").replaceFirst("ref", "").trim();
+		condition.setRawBoolean(line);
+		condition.setId(Util.generateID());
+		return condition;
+	}
+	
+	public static IForLoop parseForLoop(String line, Parser parser) {
+		IForLoop condition = new IForLoop();
+		line = line.replaceFirst("for", "").replaceFirst("ref", "").trim();
 		condition.setRawBoolean(line);
 		condition.setId(Util.generateID());
 		return condition;

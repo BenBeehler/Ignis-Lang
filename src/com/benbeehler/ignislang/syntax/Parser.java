@@ -28,8 +28,6 @@ public class Parser {
 			new ArrayList<>();
 	private List<IModule> modules = 
 			new ArrayList<>();
-	private List<ICondition> conditions = 
-			new ArrayList<>();
 	
 	private IRuntime runtime;
 	
@@ -91,6 +89,10 @@ public class Parser {
 					} else if(dec.contains("if")) {
 						ICondition obj = SyntaxHandler.parseCondition(ln, this);
 						obj.setName("if-statement:" + obj.getId());
+						block = obj;
+					} else if(dec.contains("for")) {
+						ICondition obj = SyntaxHandler.parseForLoop(ln, this);
+						obj.setName("for-statement:" + obj.getId());
 						block = obj;
 					}
 						

@@ -13,6 +13,7 @@ import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IObject;
 import com.benbeehler.ignislang.objects.IVariable;
 import com.benbeehler.ignislang.objects.Scope;
+import com.benbeehler.ignislang.syntax.DynamicParser;
 import com.benbeehler.ignislang.syntax.SyntaxBlock;
 import com.benbeehler.ignislang.syntax.SyntaxHandler;
 
@@ -60,14 +61,14 @@ public class ValueHandler {
 					stream.flush();
 				} else {
 					try {
-						throw new IRuntimeException("Invalid Value Type for Function");
+						throw new IRuntimeException("Invalid Parameter Count");
 					} catch (IRuntimeException e) {
 						e.printStackTrace();
 					}
 				}
 			} else {
 				try {
-					throw new IRuntimeException("Invalid Parameter Count for Function");
+					throw new IRuntimeException("Invalid Parameter Count");
 				} catch (IRuntimeException e) {
 					e.printStackTrace();
 				}
@@ -90,7 +91,7 @@ public class ValueHandler {
 				equals.setReturnValue(one.equals(two));
 			} else {
 				try {
-					throw new IRuntimeException("Invalid Parameter Count for equals");
+					throw new IRuntimeException("Invalid Parameter Count");
 				} catch (IRuntimeException e) {
 					e.printStackTrace();
 				}
@@ -110,7 +111,7 @@ public class ValueHandler {
 				System.out.println(value);
 			} else {
 				try {
-					throw new IRuntimeException("Invalid Parameter Count for println " + println.getParameters());
+					throw new IRuntimeException("Invalid Parameter Count");
 				} catch (IRuntimeException e) {
 					e.printStackTrace();
 				}
@@ -118,6 +119,136 @@ public class ValueHandler {
 		});
 		
 		functions.add(println);
+		
+		SyntaxBlock pBlock1 = new SyntaxBlock();
+		IFunction println1 = new IFunction(pBlock1);
+		println1.setName("typeof");
+		println1.setNativ(true);
+		println1.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		println1.setRunnable(() -> {
+			if(println1.getParameters().size() == 1) {
+				Object value = println1.getParameters().get(0).getValue();
+				try {
+					println1.setReturnValue(getType(value.toString(), pBlock1).getName());
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println1);
+		
+		SyntaxBlock pBlock11 = new SyntaxBlock();
+		IFunction println11 = new IFunction(pBlock11);
+		println11.setName("ToString");
+		println11.setNativ(true);
+		println11.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		println11.setRunnable(() -> {
+			if(println11.getParameters().size() == 1) {
+				Object value = println11.getParameters().get(0).getValue();
+				println11.setReturnValue(getString(value.toString()));
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println11);
+		
+		SyntaxBlock pBlock111 = new SyntaxBlock();
+		IFunction println111 = new IFunction(pBlock111);
+		println111.setName("ToInt");
+		println111.setNativ(true);
+		println111.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		println111.setRunnable(() -> {
+			if(println111.getParameters().size() == 1) {
+				Object value = println111.getParameters().get(0).getValue();
+				try {
+					println111.setReturnValue(getInteger(value.toString(), pBlock111.getVariables()));
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println111);
+		
+		SyntaxBlock pBlock1111 = new SyntaxBlock();
+		IFunction println1111 = new IFunction(pBlock1111);
+		println1111.setName("ToDecimal");
+		println1111.setNativ(true);
+		println1111.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		println1111.setRunnable(() -> {
+			if(println1111.getParameters().size() == 1) {
+				Object value = println1111.getParameters().get(0).getValue();
+				try {
+					println1111.setReturnValue(getDecimal(value.toString(), pBlock1111.getVariables()));
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println1111);
+		
+		SyntaxBlock pBlock11111 = new SyntaxBlock();
+		IFunction println11111 = new IFunction(pBlock11111);
+		println11111.setName("ToBool");
+		println11111.setNativ(true);
+		println11111.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		println11111.setRunnable(() -> {
+			if(println11111.getParameters().size() == 1) {
+				Object value = println11111.getParameters().get(0).getValue();
+				println11111.setReturnValue(getBoolean(value.toString(), pBlock11111.getDynParser()));
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println11111);
+		
+		SyntaxBlock pBlock111111 = new SyntaxBlock();
+		IFunction println111111 = new IFunction(pBlock111111);
+		println111111.setName("IO.Read");
+		println111111.setNativ(true);
+		println111111.setRunnable(() -> {
+			if(println111111.getParameters().size() == 0) {
+				println111111.setReturnValue(com.benbeehler.ignislang.utils.Util.readIn());
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println111111);
 	}
 	
 	public static boolean containsObject(String name) {
@@ -125,7 +256,7 @@ public class ValueHandler {
 				.equals(name)).findAny().isPresent();
 	}
 	
-	public static IObject getType(String name) {
+	public static IObject getTypeByName(String name) {
 		return objects.stream().filter(obj -> obj.getName()
 				.equals(name)).findAny().get();
 	}
@@ -203,8 +334,22 @@ public class ValueHandler {
 		return false;
 	}
 	
+	public static boolean isBoolean(String str, DynamicParser parser) {
+		str = str.trim();
+		String s = str;
+		if(str.equals("true") 
+				|| str.equals("false")) return true;
+		//System.out.println(str);
+		if(parser.getBlock().getVariables().stream().filter(e -> e.getName()
+				.equals(s)).findAny().isPresent()) {
+			return isBoolean(parser.getBlock().getVariables().stream().filter(e -> e.getName()
+					.equals(s)).findAny().get().getValue().toString(), parser);
+		}
+		return false;
+	}
+	
 	public static boolean isBoolean(String str) {
-		str = str.trim(); 
+		str = str.trim();
 		if(str.equals("true") 
 				|| str.equals("false")) return true;
 		return false;
@@ -242,6 +387,18 @@ public class ValueHandler {
 		}
 	}
 	
+	public static boolean getBoolean(String str, DynamicParser parser) {
+		str = str.trim();
+		String s = str;
+		if(str.trim().equals("true")) return true;
+		if(parser.getBlock().getVariables().stream().filter(e -> e.getName()
+				.equals(s)).findAny().isPresent()) {
+			return getBoolean(parser.getBlock().getVariables().stream().filter(e -> e.getName()
+					.equals(s)).findAny().get().getValue().toString(), parser);
+		}
+		return false;
+	}
+	
 	public static boolean getBoolean(String str) {
 		str = str.trim();
 		if(str.trim().equals("true")) return true;
@@ -275,7 +432,6 @@ public class ValueHandler {
 	public static IVariable getValue(String str, SyntaxBlock block) throws IRuntimeException {
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
 		variable.setValue(new Object());
-
 		
 		if(isInteger(str, block.getVariables())) {
 			variable.setValue(getInteger(str, block.getVariables()));
@@ -290,18 +446,66 @@ public class ValueHandler {
 			IVariable b = block.getVariables().stream()
 					.filter(bl -> bl.getName().equals(str)).findAny().get();
 			variable = b;
-		} else if(block.getSubblocks()
-				.stream().filter(b -> b.getName()
-						.equals(str.split(" ")[0]))
-				.findAny().isPresent()) {
-			IFunction func = SyntaxHandler.parseFunction(str, block.getParser());
-			variable.setValue(func.getReturnValue());
 		} else if(str.startsWith("new")) {
 			String inst = str.replaceFirst("new", "").trim();
 			
 			if(block.getSubblocks().stream()
 					.filter(b -> b.getName().equals(inst)).findAny().isPresent()) {
 				SyntaxBlock bl = block.getSubblocks().stream()
+						.filter(b -> b.getName().equals(inst)).findAny().get();
+				if(bl instanceof IObject) {
+					IObject obje = (IObject) bl;
+					variable = instantiate(obje, variable);
+				}
+			} else {
+				throw new IRuntimeException("Type specified does not exist.");
+			}
+		}
+		
+		return variable;
+	}
+	
+	public static boolean isFunctionCall(String str, DynamicParser parser) {
+		if(parser.getBlock().getSubblocks()
+				.stream().filter(b -> b.getName()
+						.equals(str.split(" ")[0]))
+				.findAny().isPresent()) {
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public static Object getFunctionCall(String str, DynamicParser parser) throws IRuntimeException {
+		IFunction func = SyntaxHandler.parseFunctionCall(str, parser);
+		return func.getReturnValue();
+	}
+	
+	public static IVariable getValue(String str, DynamicParser parser) throws IRuntimeException {
+		IVariable variable = new IVariable("var", Scope.PRIVATE);
+		variable.setValue(new Object());
+		
+		if(isInteger(str, parser.getBlock().getVariables())) {
+			variable.setValue(getInteger(str, parser.getBlock().getVariables()));
+		} else if(isDecimal(str, parser.getBlock().getVariables())) {
+			variable.setValue(getDecimal(str, parser.getBlock().getVariables()));
+		} else if(isBoolean(str, parser)) {
+			variable.setValue(getBoolean(str, parser));
+		} else if(isString(str)) {
+			variable.setValue(getString(str));
+		} else if(parser.getBlock().getVariables().stream()
+				.filter(b -> b.getName().equals(str)).findAny().isPresent()) {
+			IVariable b = parser.getBlock().getVariables().stream()
+					.filter(bl -> bl.getName().equals(str)).findAny().get();
+			variable = b;
+		} else if(isFunctionCall(str, parser)) {
+			variable.setValue(getFunctionCall(str, parser));
+		} else if(str.startsWith("new")) {
+			String inst = str.replaceFirst("new", "").trim();
+			
+			if(parser.getBlock().getSubblocks().stream()
+					.filter(b -> b.getName().equals(inst)).findAny().isPresent()) {
+				SyntaxBlock bl = parser.getBlock().getSubblocks().stream()
 						.filter(b -> b.getName().equals(inst)).findAny().get();
 				if(bl instanceof IObject) {
 					IObject obje = (IObject) bl;
@@ -323,15 +527,56 @@ public class ValueHandler {
 		return variable;
 	}
 	
+	public static IObject getType(String str, SyntaxBlock block) throws IRuntimeException {
+		if(isInteger(str, block.getVariables())) {
+			return INTEGER;
+		} else if(isDecimal(str, block.getVariables())) {
+			return DECIMAL;
+		} else if(isBoolean(str)) {
+			return BOOLEAN;
+		} else if(isString(str)) {
+			return STRING;
+		} else if(block.getVariables().stream()
+				.filter(b -> b.getName().equals(str)).findAny().isPresent()) {
+			IVariable b = block.getVariables().stream()
+					.filter(bl -> bl.getName().equals(str)).findAny().get();
+			return b.getType();
+		} else if(block.getSubblocks()
+				.stream().filter(b -> b.getName()
+						.equals(str.split(" ")[0]))
+				.findAny().isPresent()) {
+			IFunction func = SyntaxHandler.parseFunction(str, block.getParser());
+			return getType(func.getReturnValue().toString(), block);
+		} else if(isString("\"" + str + "\"")) {
+			return STRING;
+		}
+		
+		return null;
+	}
+	
+	public static IObject getType(String str) throws IRuntimeException {
+		if(isInteger(str)) {
+			return INTEGER;
+		} else if(isDecimal(str)) {
+			return DECIMAL;
+		} else if(isBoolean(str)) {
+			return BOOLEAN;
+		} else if(isString(str)) {
+			return STRING;
+		}
+		
+		return STRING;
+	}
+	
 	public static boolean isValid(String pVal, IObject type, SyntaxBlock block) throws IRuntimeException {
 		if(type == ValueHandler.BOOLEAN) {
-			return isBoolean(getValue(pVal).toString());
+			return isBoolean(pVal);
 		} else if(type == ValueHandler.DECIMAL) {
-			return isDecimal(getValue(pVal, block).toString(), block.getVariables());
+			return isDecimal(pVal);
 		} else if(type == ValueHandler.INTEGER) {
-			return isInteger(getValue(pVal, block).toString(), block.getVariables());
+			return isInteger(pVal);
 		} else if(type == ValueHandler.STRING) {
-			return isString(getValue(pVal).toString());
+			return isString("\"" + pVal + "\"");
 		} else {
 			return false;
 		}

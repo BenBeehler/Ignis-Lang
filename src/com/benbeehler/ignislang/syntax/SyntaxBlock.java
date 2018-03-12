@@ -21,6 +21,7 @@ public class SyntaxBlock {
 	private ArrayList<IVariable> variables = 
 			new ArrayList<>();
 	private SyntaxBlock master;
+	private DynamicParser dynParser;
 	
 	private IRuntime runtime;
 	private List<SyntaxBlock> subblocks = new ArrayList<>();
@@ -119,6 +120,10 @@ public class SyntaxBlock {
 			this.getRuntime().getNecessary().forEach(e -> {
 				this.getSubblocks().addAll(SyntaxBlock.extractAll(e));
 			});
+			
+			for(SyntaxBlock b : this.getRuntime().getNecessary()) {
+				this.getVariables().addAll(b.getVariables());
+			}
 		}
 		
 		this.master = master;
@@ -136,7 +141,21 @@ public class SyntaxBlock {
 	public Parser getParser() {
 		return parser;
 	}
+	
 	public void setParser(Parser parser) {
 		this.parser = parser;
+	}
+	
+	@Override
+	public String toString() {
+		return getName();
+	}
+	
+	public DynamicParser getDynParser() {
+		return dynParser;
+	}
+	
+	public void setDynParser(DynamicParser dynParser) {
+		this.dynParser = dynParser;
 	}
 }

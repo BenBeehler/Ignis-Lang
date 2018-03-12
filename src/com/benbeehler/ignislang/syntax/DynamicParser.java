@@ -1,7 +1,9 @@
 package com.benbeehler.ignislang.syntax;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.objects.IForLoop;
 import com.benbeehler.ignislang.objects.IFunction;
+import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IVariable;
 import com.benbeehler.ignislang.runtime.IRuntime;
 import com.benbeehler.ignislang.runtime.ValueHandler;
@@ -14,6 +16,7 @@ public class DynamicParser extends Parser {
 	
 	private SyntaxBlock block;
 	private IRuntime runtime;
+	private boolean running = true;
 	
 	public DynamicParser(SyntaxBlock block, IRuntime runtime) {
 		super(block, runtime);
@@ -42,10 +45,15 @@ public class DynamicParser extends Parser {
 								.filter(bl -> bl.getId().equals(id)).findFirst().get();
 						b.setRuntime(runtime);
 						b.setMaster(this.getBlock());
+						b.setDynParser(this);
 						
 						if(b.isExecute()) {
-							DynamicParser parser = new DynamicParser(b, this.getRuntime());
-							parser.start();
+							if(b instanceof IForLoop) {
+								b.execute();
+							} else {
+								DynamicParser parser = new DynamicParser(b, this.getRuntime());
+								parser.start();
+							}
 						}
 					}
 				}
@@ -65,7 +73,25 @@ public class DynamicParser extends Parser {
 					.findFirst()
 					.isPresent()) {
 				IVariable var = SyntaxHandler.parseVariable(line, this);
+				if(block instanceof IModule) {
+					var.setName(block.getName() + "." + var.getName());
+				}
 				this.getBlock().getVariables().add(var);
+			} else if(split[0].equals("Return")) {
+				if(split.length == 2) {
+					Object val = ValueHandler.getValue(line.replaceFirst(split[0], "").trim(), this).getValue();
+					
+					if(this.getBlock() instanceof IFunction) {
+						//System.out.println(val);
+						IFunction function = (IFunction) this.getBlock();
+						function.setReturnValue(val);
+						this.setRunning(false);
+					} else {
+						throw new IRuntimeException("Return statement must ONLY be included within a function.");
+					}
+				} else {
+					throw new IRuntimeException("Return statement must contain a value.");
+				}
 			}
 		}
 	}
@@ -86,5 +112,13 @@ public class DynamicParser extends Parser {
 	@Override
 	public void setRuntime(IRuntime runtime) {
 		this.runtime = runtime;
+	}
+
+	public boolean isRunning() {
+		return running;
+	}
+
+	public void setRunning(boolean running) {
+		this.running = running;
 	}
 }

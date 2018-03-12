@@ -49,4 +49,18 @@ public class Util {
 		
 		return valid;
 	}
+	
+	public static String readIn() {
+		StringBuilder sb = new StringBuilder();
+		
+		@SuppressWarnings("resource")
+		Scanner scanner = new Scanner(System.in);
+			
+		while(scanner.hasNextLine()) {
+			sb.append(scanner.nextLine());
+			break;
+		}
+		
+		return sb.toString();
+	}
 }
