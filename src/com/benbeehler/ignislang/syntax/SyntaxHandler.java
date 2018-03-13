@@ -2,6 +2,7 @@ package com.benbeehler.ignislang.syntax;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
 import com.benbeehler.ignislang.exception.ISyntaxException;
+import com.benbeehler.ignislang.objects.ICategory;
 import com.benbeehler.ignislang.objects.ICondition;
 import com.benbeehler.ignislang.objects.IForLoop;
 import com.benbeehler.ignislang.objects.IFunction;
@@ -19,7 +20,9 @@ public class SyntaxHandler {
 	static String OPEN_BRACKET = "(_tokenized_output";
 	static String CLOSE_OBJ_BRACKET = "}_tokenized_output";
 	static String CLOSE_BRACKET = ")_tokenized_output";
-	static String COMMA = ",_tokenized_output";
+	public static String COMMA = ",_tokenized_output";
+	public static String OPEN_ARRAY_BRACKET = "[_tokenized_output";
+	public static String CLOSE_ARRAY_BRACKET = "]_tokenized_output";
 	
 	public static String reverse(String str) {
 		return new StringBuilder(str).reverse().toString();
@@ -153,10 +156,16 @@ public class SyntaxHandler {
 				if(!value.equals("")) {
 					/*if(!ValueHandler.isValid(value, variable.getType()))
 						throw new IRuntimeException("Given variable value does not match assigned type.");*/
+					//System.out.println(value);
 					Object val = ValueHandler.getValue(value, parser).getValue();
-					if(!ValueHandler.isValid(val.toString(), variable.getType(), parser.getBlock())) {
-						throw new IRuntimeException("Invalid value for specified type 2");
+					
+					if(val != null) {	
+						if(!ValueHandler.isValid(val.toString(), variable.getType(), parser.getBlock())) {
+							throw new IRuntimeException("Invalid value for specified type 2");
+						}
+						
 					}
+					
 					variable.setValue(val);
 				}
 				
@@ -261,6 +270,33 @@ public class SyntaxHandler {
 		
 		func.execute();
 		return func;
+	}
+	
+	public static ICategory parseCategoryCall(String line, DynamicParser parser) throws IRuntimeException {
+		String[] split = line.split(" ");
+		String fName = split[0];
+		
+		ICategory block = parser.getBlock().getCategories().stream()
+				.filter(b -> b.getName().equals(fName))
+				.findFirst().get();
+		
+		line = line.replaceFirst(fName, "").trim();
+		String[] spl = line.split(SyntaxHandler.COMMA);
+		int i = 0;
+		for(IFunction func : block.getFunctions()) {
+			if(func.getParameters().size() > 0) {
+				for(String str : spl) {
+					IVariable obj = ValueHandler.getValue(str, parser.getBlock());
+					func.getParameters().get(i).setValue(obj.getValue());
+					
+					i++;
+				}
+			}
+			
+			func.execute();
+			func.getParameters().clear();
+		}
+		return block;
 	}
 	
 	public static ICondition parseCondition(String line, Parser parser) {

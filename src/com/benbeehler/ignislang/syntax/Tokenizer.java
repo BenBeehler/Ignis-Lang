@@ -20,10 +20,6 @@ public class Tokenizer {
 			
 			for(int i = 0; i < array.length; i++) {
 				String ch = array[i];
-				if(ch.equals("\"") || ch.equals("\'")) {
-					if(string) string = false;
-					if(!string) string = true;
-				}
 				
 				if(!string) {
 					if(ch.equals(":")) {
@@ -36,9 +32,17 @@ public class Tokenizer {
 						array[i] = SyntaxHandler.OPEN_OBJ_BRACKET;
 					} else if(ch.equals("}")) {
 						array[i] = SyntaxHandler.CLOSE_OBJ_BRACKET;
+					} else if(ch.equals("[")) {
+						array[i] = SyntaxHandler.OPEN_ARRAY_BRACKET;
+					} else if(ch.equals("]")) {
+						array[i] = SyntaxHandler.CLOSE_ARRAY_BRACKET;
 					} else if(ch.equals(",")) {
 						array[i] = SyntaxHandler.COMMA;
 					}
+				}
+				
+				if(ch.equals("\"") || ch.equals("\'")) {
+					string = !string;
 				}
 			}
 			

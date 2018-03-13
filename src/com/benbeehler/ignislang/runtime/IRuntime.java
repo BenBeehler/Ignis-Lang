@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.objects.ICategory;
 import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IObject;
 import com.benbeehler.ignislang.syntax.DynamicParser;
@@ -22,6 +23,7 @@ public class IRuntime {
 	private SyntaxBlock main;
 	private List<SyntaxBlock> imported = new ArrayList<>();
 	private List<IModule> necessary = new ArrayList<>();
+	private List<ICategory> necessaryCats = new ArrayList<>();
 	
 	public IRuntime(File file) {
 		this.file = file;
@@ -71,5 +73,13 @@ public class IRuntime {
 
 	public void setNecessary(List<IModule> necessary) {
 		this.necessary = necessary;
+	}
+
+	public List<ICategory> getNecessaryCats() {
+		return necessaryCats;
+	}
+
+	public void setNecessaryCats(List<ICategory> necessaryCats) {
+		this.necessaryCats = necessaryCats;
 	}
 }

@@ -249,7 +249,151 @@ public class ValueHandler {
 		});
 		
 		functions.add(println111111);
+		
+		SyntaxBlock pBlock1111111 = new SyntaxBlock();
+		IFunction println1111111 = new IFunction(pBlock1111111);
+		println1111111.setName("Tuple.Get");
+		println1111111.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		println1111111.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		println1111111.setNativ(true);
+		println1111111.setRunnable(() -> {
+			if(println1111111.getParameters().size() == 2) {
+				Object one = println1111111.getParameters().get(0).getValue();
+				Object two = println1111111.getParameters().get(1).getValue();
+				
+				if(one instanceof ArrayList<?>) {
+					@SuppressWarnings("unchecked")
+					List<Object> list = (ArrayList<Object>) one;
+					if(isInteger(two.toString())) {
+						try {
+							println1111111.setReturnValue(list.get(getInteger(two.toString())));
+						} catch (IRuntimeException e) {
+							e.printStackTrace();
+						}
+					} else {
+						try {
+							throw new IRuntimeException("Value must be an int.");
+						} catch (IRuntimeException e) {
+							e.printStackTrace();
+						}
+					}
+				} else {
+					try {
+						throw new IRuntimeException("Value must be a tuple.");
+					} catch (IRuntimeException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println1111111);
+		
+		SyntaxBlock pBlock11111111 = new SyntaxBlock();
+		IFunction println11111111 = new IFunction(pBlock11111111);
+		println11111111.setName("Tuple.Index");
+		println11111111.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		println11111111.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		println11111111.setNativ(true);
+		println11111111.setRunnable(() -> {
+			if(println11111111.getParameters().size() == 2) {
+				Object one = println11111111.getParameters().get(0).getValue();
+				Object two = println11111111.getParameters().get(1).getValue();
+				
+				if(one instanceof ArrayList<?>) {
+					@SuppressWarnings("unchecked")
+					List<Object> list = (ArrayList<Object>) one;
+					println11111111.setReturnValue(list.indexOf(two));
+				} else {
+					try {
+						throw new IRuntimeException("Value must be a tuple.");
+					} catch (IRuntimeException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println11111111);
+		
+		SyntaxBlock size_block = new SyntaxBlock();
+		IFunction size_func = new IFunction(size_block);
+		size_func.setName("Size");
+		size_func.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		size_func.setNativ(true);
+		size_func.setRunnable(() -> {
+			if(size_func.getParameters().size() == 1) {
+				Object one = size_func.getParameters().get(0).getValue();
+				
+				if(one instanceof ArrayList<?>) {
+					@SuppressWarnings("unchecked")
+					List<Object> list = (ArrayList<Object>) one;
+					size_func.setReturnValue(list.size());
+				} else if(one instanceof String) {
+					size_func.setReturnValue(one.toString().length());
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(size_func);
+		
+		SyntaxBlock size_block1 = new SyntaxBlock();
+		IFunction size_func1 = new IFunction(size_block1);
+		size_func1.setName("ToTuple");
+		size_func1.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		size_func1.setNativ(true);
+		size_func1.setRunnable(() -> {
+			if(size_func1.getParameters().size() == 1) {
+				Object one = size_func1.getParameters().get(0).getValue();
+				
+				if(one instanceof ArrayList<?>) {
+					@SuppressWarnings("unchecked")
+					List<Object> list = (ArrayList<Object>) one;
+					size_func1.setReturnValue(list);
+				} else if(one instanceof String) {
+					List<String> list = new ArrayList<>();
+					String[] spl = one.toString().split("");
+					for(String str : spl)
+						list.add(str);
+					
+					size_func1.setReturnValue(list);
+				} else {
+					List<Object> list = new ArrayList<>();
+					list.add(one);
+					
+					size_func1.setReturnValue(list);
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(size_func1);
 	}
+	
+	
 	
 	public static boolean containsObject(String name) {
 		return objects.stream().filter(obj -> obj.getName()
@@ -371,6 +515,36 @@ public class ValueHandler {
 		}
 	}
 	
+	public static List<Object> getRawList(String string, DynamicParser parser) throws IRuntimeException {
+		List<Object> value = new ArrayList<>(); 
+		string = string.trim();
+		if(string.startsWith(SyntaxHandler.OPEN_ARRAY_BRACKET) 
+				&& string.endsWith(SyntaxHandler.CLOSE_ARRAY_BRACKET)) {
+			string = string.replace(SyntaxHandler.OPEN_ARRAY_BRACKET, "")
+					.replace(SyntaxHandler.CLOSE_ARRAY_BRACKET, "").trim();
+			
+			String[] split = string.split(SyntaxHandler.COMMA);
+			for(String str : split) {
+				Object obj = getValue(str, parser).getValue();
+				value.add(obj);
+			}
+		}
+		
+		return value;
+	}
+	
+	public static boolean isRawList(String string) {
+		string = string.trim();
+		return (string.startsWith(SyntaxHandler.OPEN_ARRAY_BRACKET) 
+				&& string.endsWith(SyntaxHandler.CLOSE_ARRAY_BRACKET));
+	}
+	
+	public static boolean isList(String string) {
+		string = string.trim();
+		return (string.startsWith("[") 
+				&& string.endsWith("]"));
+	}
+	
 	public static int getInteger(String str) throws IRuntimeException {
 		try {
 			return Integer.parseInt(calc(str));
@@ -406,6 +580,7 @@ public class ValueHandler {
 	}
 	
 	public static String getString(String str) {
+		str = str.trim();
 		str = str.replaceFirst("\"", "");
 		str = SyntaxHandler.reverse(SyntaxHandler
 				.reverse(str.replaceFirst("\"", "")));
@@ -414,7 +589,7 @@ public class ValueHandler {
 	
 	public static IVariable getValue(String str) throws IRuntimeException {
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
-		variable.setValue(new Object());
+		variable.setValue("");
 		
 		if(isInteger(str)) {
 			variable.setValue(getInteger(str));
@@ -431,7 +606,7 @@ public class ValueHandler {
 	
 	public static IVariable getValue(String str, SyntaxBlock block) throws IRuntimeException {
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
-		variable.setValue(new Object());
+		variable.setValue("");
 		
 		if(isInteger(str, block.getVariables())) {
 			variable.setValue(getInteger(str, block.getVariables()));
@@ -446,6 +621,8 @@ public class ValueHandler {
 			IVariable b = block.getVariables().stream()
 					.filter(bl -> bl.getName().equals(str)).findAny().get();
 			variable = b;
+		} else if(isRawList(str)) {
+			variable.setValue(getRawList(str, block.getDynParser()));
 		} else if(str.startsWith("new")) {
 			String inst = str.replaceFirst("new", "").trim();
 			
@@ -483,7 +660,7 @@ public class ValueHandler {
 	
 	public static IVariable getValue(String str, DynamicParser parser) throws IRuntimeException {
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
-		variable.setValue(new Object());
+		variable.setValue("");
 		
 		if(isInteger(str, parser.getBlock().getVariables())) {
 			variable.setValue(getInteger(str, parser.getBlock().getVariables()));
@@ -498,6 +675,8 @@ public class ValueHandler {
 			IVariable b = parser.getBlock().getVariables().stream()
 					.filter(bl -> bl.getName().equals(str)).findAny().get();
 			variable = b;
+		} else if(isRawList(str)) {
+			variable.setValue(getRawList(str, parser));
 		} else if(isFunctionCall(str, parser)) {
 			variable.setValue(getFunctionCall(str, parser));
 		} else if(str.startsWith("new")) {
@@ -541,6 +720,8 @@ public class ValueHandler {
 			IVariable b = block.getVariables().stream()
 					.filter(bl -> bl.getName().equals(str)).findAny().get();
 			return b.getType();
+		} else if(isRawList(str)) {
+			return TUPLE;
 		} else if(block.getSubblocks()
 				.stream().filter(b -> b.getName()
 						.equals(str.split(" ")[0]))
@@ -563,6 +744,8 @@ public class ValueHandler {
 			return BOOLEAN;
 		} else if(isString(str)) {
 			return STRING;
+		} else if(isRawList(str)) {
+			return TUPLE;
 		}
 		
 		return STRING;
@@ -575,6 +758,8 @@ public class ValueHandler {
 			return isDecimal(pVal);
 		} else if(type == ValueHandler.INTEGER) {
 			return isInteger(pVal);
+		} else if(type == ValueHandler.TUPLE) {
+			return isList(pVal);
 		} else if(type == ValueHandler.STRING) {
 			return isString("\"" + pVal + "\"");
 		} else {

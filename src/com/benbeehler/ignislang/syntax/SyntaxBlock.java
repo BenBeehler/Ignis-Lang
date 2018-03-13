@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.objects.ICategory;
 import com.benbeehler.ignislang.objects.IVariable;
 import com.benbeehler.ignislang.runtime.IRuntime;
 import com.benbeehler.ignislang.utils.Util;
@@ -22,6 +23,8 @@ public class SyntaxBlock {
 			new ArrayList<>();
 	private SyntaxBlock master;
 	private DynamicParser dynParser;
+	private List<ICategory> categories = 
+			new ArrayList<>();
 	
 	private IRuntime runtime;
 	private List<SyntaxBlock> subblocks = new ArrayList<>();
@@ -126,6 +129,9 @@ public class SyntaxBlock {
 			}
 		}
 		
+		this.getCategories().addAll(master.getCategories());
+		this.getCategories().addAll(this.getRuntime().getNecessaryCats());
+		
 		this.master = master;
 	}
 	
@@ -157,5 +163,11 @@ public class SyntaxBlock {
 	
 	public void setDynParser(DynamicParser dynParser) {
 		this.dynParser = dynParser;
+	}
+	public List<ICategory> getCategories() {
+		return categories;
+	}
+	public void setCategories(List<ICategory> categories) {
+		this.categories = categories;
 	}
 }
