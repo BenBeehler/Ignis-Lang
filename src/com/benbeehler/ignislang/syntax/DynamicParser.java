@@ -1,6 +1,10 @@
 package com.benbeehler.ignislang.syntax;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.exception.ISyntaxException;
 import com.benbeehler.ignislang.objects.ICategory;
 import com.benbeehler.ignislang.objects.IForLoop;
 import com.benbeehler.ignislang.objects.IFunction;
@@ -28,10 +32,19 @@ public class DynamicParser extends Parser {
 	@Override
 	public void start() throws IRuntimeException {
 		//System.out.println("parsing " + block.getName());
+		this.setCurrent(this.getBlock());
 		for(String line : block.getLines()) {
 			line = line.trim();
 			String[] split = line.split(" ");
 			String first = split[0];
+			
+			List<SyntaxBlock> all = new ArrayList<>();
+			all.addAll(getRuntime().getNecessary());
+			all.addAll(getRuntime().getImported());
+			all.addAll(block.getSubblocks());
+			this.getRuntime().getNecessary().forEach(e -> {
+				all.addAll(SyntaxBlock.extractAll(e));
+			});
 			
 			if(first.equalsIgnoreCase("CALL_BLOCK")) {
 				if(split.length == 2) {
@@ -47,6 +60,8 @@ public class DynamicParser extends Parser {
 						b.setRuntime(runtime);
 						b.setMaster(this.getBlock());
 						b.setDynParser(this);
+						
+						//System.out.println(b.getName());
 						
 						if(b.isExecute()) {
 							if(b instanceof IForLoop) {
@@ -134,8 +149,27 @@ public class DynamicParser extends Parser {
 							} else {
 								throw new IRuntimeException("Category-Function Addition must include a function.");
 							}
+						} else if(fName.split(".").length != 0) {
+							if(all.stream().filter(b -> b.getName()
+									.equals(fName.split(".")[0])).findFirst()
+							.isPresent()) {
+								if(fName.split(".").length == 2) {
+									if(fName.split(".")[1].equals("auto*")) {
+										for(SyntaxBlock block : all) {
+											if(block instanceof IFunction) {
+												IFunction func = (IFunction) block;
+												if(func.isExecute()) {
+													cat.getFunctions().add(func);
+												}
+											}
+										}
+									}
+								} else {
+									throw new ISyntaxException("Category-Statement: Module must have functions specified", this);
+								}
+							}
 						} else {
-							throw new IRuntimeException("Category-Function Addition must include a function.");
+							//throw new IRuntimeException("Category-Function Addition must include a function.");
 						}
 					} else {
 						SyntaxHandler.parseCategoryCall(line, this);
@@ -158,7 +192,13 @@ public class DynamicParser extends Parser {
 				} else {
 					throw new IRuntimeException("Return statement must contain a value.");
 				}
+			} else if(line.startsWith("#") || line.trim().equals("")) {
+				//do nothing
+			} else {
+				throw new ISyntaxException("Unknown disturbance", this);
 			}
+			
+			this.addLine();
 		}
 	}
 	

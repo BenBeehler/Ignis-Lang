@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.benbeehler.ignislang.exception.ErrorHandler;
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.exception.ISyntaxException;
 import com.benbeehler.ignislang.objects.ICondition;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
@@ -55,7 +56,7 @@ public class Parser {
 			String[] split = ln.split(" ");
 			int len = split.length;
 			
-			if(split[0].trim().equals("ref")) {
+			if(split[0].trim().equals("def")) {
 				//new reference
 				if(len >= 2) {
 					String[] spl = ln.split(SyntaxHandler.COLON);
@@ -81,7 +82,7 @@ public class Parser {
 					} else if(dec.contains("object")) {
 						//new object
 						dec = dec
-								.replaceFirst("ref", "")
+								.replaceFirst("def", "")
 								.replaceFirst("object", "").trim();
 							
 						IObject obj = new IObject(dec);
@@ -90,6 +91,19 @@ public class Parser {
 						ICondition obj = SyntaxHandler.parseCondition(ln, this);
 						obj.setName("if-statement:" + obj.getId());
 						block = obj;
+					/*} else if(dec.contains("else")) {
+						if(getCurrent() instanceof ICondition) {
+							ICondition obj = SyntaxHandler.parseECondition(ln, this);
+							obj.setName("else-statement:" + obj.getId());
+							block = obj;
+							
+							current.addLine("CALL_BLOCK " + block.getId());
+							//current.addBlock(block);
+							finished.add(current);
+							bodies.remove(0);
+						} else {
+							throw new IRuntimeException("Else statement cannot exist in a desolate setting.");
+						}*/
 					} else if(dec.contains("for")) {
 						ICondition obj = SyntaxHandler.parseForLoop(ln, this);
 						obj.setName("for-statement:" + obj.getId());
@@ -111,7 +125,11 @@ public class Parser {
 			} else if(ln.trim().equals("end")) {
 				finished.add(current);
 				bodies.remove(0);
-				current = bodies.get(0);
+				if(bodies.size() != 0) {
+					current = bodies.get(0);
+				} else {
+					throw new ISyntaxException("Invalid end body statement", this);
+				}
 			} else {
 				current.addLine(ln);
 			}
@@ -130,6 +148,10 @@ public class Parser {
 		return this.current;
 	}
 	
+	public void setCurrent(SyntaxBlock block) {
+		this.current = block;
+	}
+	
 	public SyntaxBlock getMain() {
 		return this.main;
 	}
@@ -140,6 +162,10 @@ public class Parser {
 	
 	public int getLine() {
 		return this.line;
+	}
+	
+	public void addLine() {
+		this.line++;
 	}
 
 	public IRuntime getRuntime() {

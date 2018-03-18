@@ -1,18 +1,26 @@
 package com.benbeehler.ignislang.runtime;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.eclipse.jetty.server.Request;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.objects.ICategory;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IObject;
 import com.benbeehler.ignislang.objects.IVariable;
 import com.benbeehler.ignislang.objects.Scope;
+import com.benbeehler.ignislang.runtime.server.JettyHandler;
 import com.benbeehler.ignislang.syntax.DynamicParser;
 import com.benbeehler.ignislang.syntax.SyntaxBlock;
 import com.benbeehler.ignislang.syntax.SyntaxHandler;
@@ -20,6 +28,7 @@ import com.benbeehler.ignislang.syntax.SyntaxHandler;
 public class ValueHandler {
 
 	public static IObject STRING = new IObject("string");
+	public static IObject OBJECT = new IObject("object");
 	public static IObject DECIMAL = new IObject("decimal");
 	public static IObject BOOLEAN = new IObject("bool");
 	public static IObject INTEGER = new IObject("int");
@@ -30,9 +39,12 @@ public class ValueHandler {
 			new ArrayList<>();
 	public static final List<IFunction> functions = 
 			new ArrayList<>();
+	public static final List<ICategory> categories =
+			new ArrayList<>();
 	
 	public static void init() throws IRuntimeException {
 		objects.add(STRING);
+		objects.add(OBJECT);
 		objects.add(DECIMAL);
 		objects.add(BOOLEAN);
 		objects.add(INTEGER);
@@ -391,13 +403,95 @@ public class ValueHandler {
 		});
 		
 		functions.add(size_func1);
+		
+		SyntaxBlock size_block11 = new SyntaxBlock();
+		IFunction size_func11 = new IFunction(size_block11);
+		size_func11.setName("Http.StartAndListen");
+		size_func11.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		size_func11.setNativ(true);
+		size_func11.setRunnable(() -> {
+			if(size_func11.getParameters().size() == 1) {
+				Object one = size_func11.getParameters().get(0).getValue();
+				int portNumber = Integer.parseInt(one.toString());
+				
+				try {
+					new JettyHandler().execute(portNumber);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(size_func11);
+		
+		SyntaxBlock http_serve_block = new SyntaxBlock();
+		IFunction http_serve = new IFunction(http_serve_block);
+		http_serve.setName("Http.Serve");
+		http_serve.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		http_serve.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		http_serve.addParameter(new IVariable("param_3", Scope.PRIVATE));
+		http_serve.setNativ(true);
+		http_serve.setRunnable(() -> {
+			if(http_serve.getParameters().size() == 3) {
+				if(http_serve.getParameters().get(0).getValue() instanceof Request
+						&& http_serve.getParameters().get(1).getValue() instanceof HttpServletResponse) {
+					Request baseRequest = (Request) http_serve.getParameters().get(0).getValue();
+					HttpServletResponse response = (HttpServletResponse) http_serve.getParameters().get(1).getValue();
+					String output = http_serve.getParameters().get(2).getValue().toString();
+					
+					response.setContentType("text/html; charset=utf-8");
+				    response.setStatus(HttpServletResponse.SC_OK);
+				    
+					try {
+					    PrintWriter out = response.getWriter();
+	
+					    out.println(output);
+	
+					    baseRequest.setHandled(true);
+					} catch (IOException e) {
+					}
+				} else {
+					try {
+						throw new IRuntimeException("The given parameters do not match the required types to call this function.");
+					} catch (IRuntimeException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		functions.add(http_serve);
+		
+		
+		SyntaxBlock pBlock11111111111111 = new SyntaxBlock();
+		IFunction println111111111 = new IFunction(pBlock11111111111111);
+		println111111111.setName("Numbers.rand");
+		println111111111.setNativ(true);
+		println111111111.setRunnable(() -> {
+			if(println111111111.getParameters().size() == 0) {
+				println111111111.setReturnValue(new Random().nextInt(Integer.MAX_VALUE));
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(println111111111);
+		
+		ICategory cat = new ICategory("Http.GetHandler", 4);
+		ValueHandler.categories.add(cat);
 	}
-	
-	
 	
 	public static boolean containsObject(String name) {
 		return objects.stream().filter(obj -> obj.getName()
 				.equals(name)).findAny().isPresent();
+	}
+	
+	public static ICategory getCategoryFromName(String name, List<ICategory> list) {
+		return list.stream().filter(e -> e.getName().equals(name)).findFirst().get();
 	}
 	
 	public static IObject getTypeByName(String name) {
@@ -605,26 +699,31 @@ public class ValueHandler {
 	}
 	
 	public static IVariable getValue(String str, SyntaxBlock block) throws IRuntimeException {
+		str = str.trim();
+		String string = str;
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
 		variable.setValue("");
 		
-		if(isInteger(str, block.getVariables())) {
-			variable.setValue(getInteger(str, block.getVariables()));
-		} else if(isDecimal(str, block.getVariables())) {
-			variable.setValue(getDecimal(str, block.getVariables()));
-		} else if(isBoolean(str)) {
-			variable.setValue(getBoolean(str));
-		} else if(isString(str)) {
-			variable.setValue(getString(str));
+		//block.getVariables().forEach(e -> System.out.println(e.getName()));
+		
+		if(isInteger(string, block.getVariables())) {
+			variable.setValue(getInteger(string, block.getVariables()));
+		} else if(isDecimal(string, block.getVariables())) {
+			variable.setValue(getDecimal(string, block.getVariables()));
+		} else if(isBoolean(string)) {
+			variable.setValue(getBoolean(string));
+		} else if(isString(string)) {
+			variable.setValue(getString(string));
 		} else if(block.getVariables().stream()
-				.filter(b -> b.getName().equals(str)).findAny().isPresent()) {
+				.filter(b -> b.getName().equals(string)).findAny().isPresent()) {
 			IVariable b = block.getVariables().stream()
-					.filter(bl -> bl.getName().equals(str)).findAny().get();
+					.filter(bl -> bl.getName().equals(string)).findAny().get();
+			//System.out.println("meep " + string);
 			variable = b;
-		} else if(isRawList(str)) {
-			variable.setValue(getRawList(str, block.getDynParser()));
-		} else if(str.startsWith("new")) {
-			String inst = str.replaceFirst("new", "").trim();
+		} else if(isRawList(string)) {
+			variable.setValue(getRawList(string, block.getDynParser()));
+		} else if(string.startsWith("new")) {
+			String inst = string.replaceFirst("new", "").trim();
 			
 			if(block.getSubblocks().stream()
 					.filter(b -> b.getName().equals(inst)).findAny().isPresent()) {
@@ -660,7 +759,7 @@ public class ValueHandler {
 	
 	public static IVariable getValue(String str, DynamicParser parser) throws IRuntimeException {
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
-		variable.setValue("");
+		variable.setValue(null);
 		
 		if(isInteger(str, parser.getBlock().getVariables())) {
 			variable.setValue(getInteger(str, parser.getBlock().getVariables()));
@@ -732,7 +831,7 @@ public class ValueHandler {
 			return STRING;
 		}
 		
-		return null;
+		return OBJECT;
 	}
 	
 	public static IObject getType(String str) throws IRuntimeException {
@@ -748,7 +847,7 @@ public class ValueHandler {
 			return TUPLE;
 		}
 		
-		return STRING;
+		return OBJECT;
 	}
 	
 	public static boolean isValid(String pVal, IObject type, SyntaxBlock block) throws IRuntimeException {
@@ -762,6 +861,8 @@ public class ValueHandler {
 			return isList(pVal);
 		} else if(type == ValueHandler.STRING) {
 			return isString("\"" + pVal + "\"");
+		} else if(type == ValueHandler.OBJECT) {
+			return true;
 		} else {
 			return false;
 		}

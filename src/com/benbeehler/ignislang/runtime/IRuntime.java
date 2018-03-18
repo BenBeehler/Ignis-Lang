@@ -2,6 +2,7 @@ package com.benbeehler.ignislang.runtime;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
@@ -25,6 +26,8 @@ public class IRuntime {
 	private List<IModule> necessary = new ArrayList<>();
 	private List<ICategory> necessaryCats = new ArrayList<>();
 	
+	private HashMap<String, SyntaxBlock> original = new HashMap<>();
+	
 	public IRuntime(File file) {
 		this.file = file;
 	}
@@ -43,6 +46,8 @@ public class IRuntime {
 		
 		main = parser.getMain();
 		main.getSubblocks().addAll(ValueHandler.functions);
+		
+		main.getCategories().addAll(ValueHandler.categories);
 		
 		developObjectProps();
 	}
@@ -81,5 +86,13 @@ public class IRuntime {
 
 	public void setNecessaryCats(List<ICategory> necessaryCats) {
 		this.necessaryCats = necessaryCats;
+	}
+
+	public HashMap<String, SyntaxBlock> getOriginal() {
+		return original;
+	}
+
+	public void setOriginal(HashMap<String, SyntaxBlock> original) {
+		this.original = original;
 	}
 }

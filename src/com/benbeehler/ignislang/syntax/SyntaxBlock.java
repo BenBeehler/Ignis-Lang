@@ -14,8 +14,8 @@ import com.benbeehler.ignislang.utils.Util;
 
 public class SyntaxBlock {
 
-	private String name = "main";
-	private String id = Util.generateID();
+	protected String name = "main";
+	protected String id = Util.generateID();
 	private boolean execute = false;
 	private List<String> lines = 
 				new ArrayList<>();

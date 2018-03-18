@@ -6,6 +6,7 @@ import com.benbeehler.ignislang.syntax.SyntaxBlock;
 public class ICondition extends SyntaxBlock {
 	
 	private String rawBoolean = "";
+	private boolean normal = true;
 
 	public String getRawBoolean() {
 		return rawBoolean;
@@ -17,6 +18,18 @@ public class ICondition extends SyntaxBlock {
 	
 	@Override
 	public boolean isExecute() {
-		return ValueHandler.getBoolean(rawBoolean, this.getDynParser());
+		if(isNormal()) {
+			return ValueHandler.getBoolean(rawBoolean, this.getDynParser());
+		} else {
+			return !ValueHandler.getBoolean(rawBoolean, this.getDynParser());
+		}
+	}
+
+	public boolean isNormal() {
+		return normal;
+	}
+
+	public void setNormal(boolean normal) {
+		this.normal = normal;
 	}
 }

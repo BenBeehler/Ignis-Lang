@@ -44,7 +44,7 @@ public class SyntaxHandler {
 	
 	public static IFunction parseFunction(String line, Parser parser) throws IRuntimeException {
 		line = line.trim();
-		line = line.replaceFirst("ref", "");
+		line = line.replaceFirst("def", "");
 		
 		String[] spl = line.split(COLON);
 		
@@ -92,7 +92,7 @@ public class SyntaxHandler {
 	
 	public static IModule parseModule(String line, Parser parser) {
 		line = line.trim();
-		line = line.replaceFirst("ref", "");
+		line = line.replaceFirst("def", "");
 		line = line.replaceFirst("module", "");
 		
 		IModule module = new IModule();
@@ -259,9 +259,13 @@ public class SyntaxHandler {
 		line = line.replaceFirst(fName, "").trim();
 		String[] spl = line.split(SyntaxHandler.COMMA);
 		int i = 0;
+		
+		//System.out.println(func.getParameters().size() + " : " + func.getName());
+		
 		if(func.getParameters().size() > 0) {
 			for(String str : spl) {
 				IVariable obj = ValueHandler.getValue(str, parser.getBlock());
+				//System.out.println(obj.getValue() instanceof String);
 				func.getParameters().get(i).setValue(obj.getValue());
 				
 				i++;
@@ -269,6 +273,7 @@ public class SyntaxHandler {
 		}
 		
 		func.execute();
+		func.getVariables().clear();
 		return func;
 	}
 	
@@ -301,15 +306,25 @@ public class SyntaxHandler {
 	
 	public static ICondition parseCondition(String line, Parser parser) {
 		ICondition condition = new ICondition();
-		line = line.replaceFirst("if", "").replaceFirst("ref", "").trim();
+		line = line.replaceFirst("if", "").replaceFirst("def", "").trim();
 		condition.setRawBoolean(line);
+		condition.setId(Util.generateID());
+		return condition;
+	}
+	
+	public static ICondition parseECondition(String line, Parser parser) {
+		ICondition condition = new ICondition();
+		line = line.replaceFirst("else", "").replaceFirst("def", "").trim();
+		ICondition cond = (ICondition) parser.getCurrent();
+		condition.setRawBoolean(cond.getRawBoolean());
+		condition.setNormal(false);
 		condition.setId(Util.generateID());
 		return condition;
 	}
 	
 	public static IForLoop parseForLoop(String line, Parser parser) {
 		IForLoop condition = new IForLoop();
-		line = line.replaceFirst("for", "").replaceFirst("ref", "").trim();
+		line = line.replaceFirst("for", "").replaceFirst("def", "").trim();
 		condition.setRawBoolean(line);
 		condition.setId(Util.generateID());
 		return condition;
