@@ -36,6 +36,7 @@ public class DynamicParser extends Parser {
 		for(String line : block.getLines()) {
 			line = line.trim();
 			String[] split = line.split(" ");
+			String[] spl = line.split("=");
 			String first = split[0];
 			
 			List<SyntaxBlock> all = new ArrayList<>();
@@ -116,6 +117,12 @@ public class DynamicParser extends Parser {
 					throw new IRuntimeException("Category statement must"
 							+ "be formatted as \"category [name] [parameter_count]\"");
 				}
+			} else if(this.getBlock().getVariables()
+					.stream().filter(e -> e.getName().equals(spl[0].trim()))
+					.findFirst().isPresent()) {
+				this.getBlock().getVariables()
+						.stream().filter(e -> e.getName().equals(spl[0].trim()))
+						.findFirst().get().setValue(SyntaxHandler.remapVariable(line, this).getValue());
 			} else if(this.getBlock().getCategories().stream()
 					.filter(t -> t.getName().equals(first))
 					.findFirst()
@@ -192,6 +199,8 @@ public class DynamicParser extends Parser {
 				} else {
 					throw new IRuntimeException("Return statement must contain a value.");
 				}
+			} else if(line.trim().equals("stop")) {
+				break;
 			} else if(line.startsWith("#") || line.trim().equals("")) {
 				//do nothing
 			} else {

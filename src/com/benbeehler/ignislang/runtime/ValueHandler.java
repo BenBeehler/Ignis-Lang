@@ -1,6 +1,11 @@
 package com.benbeehler.ignislang.runtime;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +18,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.server.Request;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
 import com.benbeehler.ignislang.objects.ICategory;
@@ -24,6 +33,7 @@ import com.benbeehler.ignislang.runtime.server.JettyHandler;
 import com.benbeehler.ignislang.syntax.DynamicParser;
 import com.benbeehler.ignislang.syntax.SyntaxBlock;
 import com.benbeehler.ignislang.syntax.SyntaxHandler;
+import com.benbeehler.ignislang.utils.Util;
 
 public class ValueHandler {
 
@@ -134,7 +144,7 @@ public class ValueHandler {
 		
 		SyntaxBlock pBlock1 = new SyntaxBlock();
 		IFunction println1 = new IFunction(pBlock1);
-		println1.setName("typeof");
+		println1.setName("TypeOf");
 		println1.setNativ(true);
 		println1.addParameter(new IVariable("param_1", Scope.PRIVATE));
 		println1.setRunnable(() -> {
@@ -246,7 +256,7 @@ public class ValueHandler {
 		
 		SyntaxBlock pBlock111111 = new SyntaxBlock();
 		IFunction println111111 = new IFunction(pBlock111111);
-		println111111.setName("IO.Read");
+		println111111.setName("IO.In");
 		println111111.setNativ(true);
 		println111111.setRunnable(() -> {
 			if(println111111.getParameters().size() == 0) {
@@ -307,21 +317,21 @@ public class ValueHandler {
 		
 		functions.add(println1111111);
 		
-		SyntaxBlock pBlock11111111 = new SyntaxBlock();
-		IFunction println11111111 = new IFunction(pBlock11111111);
-		println11111111.setName("Tuple.Index");
-		println11111111.addParameter(new IVariable("param_1", Scope.PRIVATE));
-		println11111111.addParameter(new IVariable("param_2", Scope.PRIVATE));
-		println11111111.setNativ(true);
-		println11111111.setRunnable(() -> {
-			if(println11111111.getParameters().size() == 2) {
-				Object one = println11111111.getParameters().get(0).getValue();
-				Object two = println11111111.getParameters().get(1).getValue();
+		SyntaxBlock tuple_index_block = new SyntaxBlock();
+		IFunction tuple_index = new IFunction(tuple_index_block);
+		tuple_index.setName("Tuple.Index");
+		tuple_index.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		tuple_index.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		tuple_index.setNativ(true);
+		tuple_index.setRunnable(() -> {
+			if(tuple_index.getParameters().size() == 2) {
+				Object one = tuple_index.getParameters().get(0).getValue();
+				Object two = tuple_index.getParameters().get(1).getValue();
 				
 				if(one instanceof ArrayList<?>) {
 					@SuppressWarnings("unchecked")
 					List<Object> list = (ArrayList<Object>) one;
-					println11111111.setReturnValue(list.indexOf(two));
+					tuple_index.setReturnValue(list.indexOf(two));
 				} else {
 					try {
 						throw new IRuntimeException("Value must be a tuple.");
@@ -338,7 +348,75 @@ public class ValueHandler {
 			}
 		});
 		
-		functions.add(println11111111);
+		functions.add(tuple_index);
+		
+		SyntaxBlock tuple_add_block = new SyntaxBlock();
+		IFunction tuple_add = new IFunction(tuple_add_block);
+		tuple_add.setName("Tuple.Add");
+		tuple_add.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		tuple_add.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		tuple_add.setNativ(true);
+		tuple_add.setRunnable(() -> {
+			if(tuple_add.getParameters().size() == 2) {
+				Object one = tuple_add.getParameters().get(0).getValue();
+				Object two = tuple_add.getParameters().get(1).getValue();
+				
+				if(one instanceof ArrayList<?>) {
+					@SuppressWarnings("unchecked")
+					List<Object> list = (ArrayList<Object>) one;
+					list.add(two);
+					tuple_add.setReturnValue(list);
+				} else {
+					try {
+						throw new IRuntimeException("Value must be a tuple.");
+					} catch (IRuntimeException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(tuple_add);
+		
+		SyntaxBlock tuple_add_block1 = new SyntaxBlock();
+		IFunction tuple_add1 = new IFunction(tuple_add_block1);
+		tuple_add1.setName("Tuple.Remove");
+		tuple_add1.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		tuple_add1.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		tuple_add1.setNativ(true);
+		tuple_add1.setRunnable(() -> {
+			if(tuple_add1.getParameters().size() == 2) {
+				Object one = tuple_add1.getParameters().get(0).getValue();
+				Object two = tuple_add1.getParameters().get(1).getValue();
+				
+				if(one instanceof ArrayList<?>) {
+					@SuppressWarnings("unchecked")
+					List<Object> list = (ArrayList<Object>) one;
+					list.remove(two);
+					tuple_add1.setReturnValue(list);
+				} else {
+					try {
+						throw new IRuntimeException("Value must be a tuple.");
+					} catch (IRuntimeException e) {
+						e.printStackTrace();
+					}
+				}
+			} else {
+				try {
+					throw new IRuntimeException("Invalid Parameter Count");
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(tuple_add1);
 		
 		SyntaxBlock size_block = new SyntaxBlock();
 		IFunction size_func = new IFunction(size_block);
@@ -439,7 +517,7 @@ public class ValueHandler {
 					HttpServletResponse response = (HttpServletResponse) http_serve.getParameters().get(1).getValue();
 					String output = http_serve.getParameters().get(2).getValue().toString();
 					
-					response.setContentType("text/html; charset=utf-8");
+					response.setContentType("text/html; text/css");
 				    response.setStatus(HttpServletResponse.SC_OK);
 				    
 					try {
@@ -462,14 +540,193 @@ public class ValueHandler {
 		
 		functions.add(http_serve);
 		
+		SyntaxBlock io_filein_block = new SyntaxBlock();
+		IFunction file_instr = new IFunction(io_filein_block);
+		file_instr.setName("IO.FileInStream");
+		file_instr.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		file_instr.setNativ(true);
+		file_instr.setRunnable(() -> {
+			if(file_instr.getParameters().size() == 1) {
+				String fPath = file_instr.getParameters().get(0).getValue().toString();
+				File f = new File(fPath);
+				try {
+					file_instr.setReturnValue(new FileInputStream(f));
+				} catch (FileNotFoundException e) {
+					try {
+						throw new IRuntimeException("Specified value must be a valid file.");
+					} catch (IRuntimeException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		functions.add(file_instr);
+		
+		SyntaxBlock io_fileout_block = new SyntaxBlock();
+		IFunction file_outstr = new IFunction(io_fileout_block);
+		file_outstr.setName("IO.FileOutStream");
+		file_outstr.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		file_outstr.setNativ(true);
+		file_outstr.setRunnable(() -> {
+			if(file_outstr.getParameters().size() == 1) {
+				String fPath = file_outstr.getParameters().get(0).getValue().toString();
+				File f = new File(fPath);
+				try {
+					file_outstr.setReturnValue(new PrintStream(f));
+				} catch (FileNotFoundException e) {
+					try {
+						throw new IRuntimeException("Specified value must be a valid file.");
+					} catch (IRuntimeException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		functions.add(file_outstr);
+		
+		SyntaxBlock io_write_block = new SyntaxBlock();
+		IFunction io_write = new IFunction(io_write_block);
+		io_write.setName("IO.Write");
+		io_write.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		io_write.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		io_write.setNativ(true);
+		io_write.setRunnable(() -> {
+			if(io_write.getParameters().size() == 2) {
+				Object potentionalWriter = io_write.getParameters().get(0).getValue();
+				String data = io_write.getParameters().get(1).getValue().toString();
+				
+				if(potentionalWriter instanceof PrintStream) {
+					@SuppressWarnings("resource")
+					PrintStream stream = (PrintStream) potentionalWriter;
+					stream.print(data);
+					stream.flush();
+				} else {
+					try {
+						throw new IRuntimeException("Writer requires that the first parameter be a FileOutStream.");
+					} catch (IRuntimeException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		functions.add(io_write);
+		
+		SyntaxBlock io_read_block = new SyntaxBlock();
+		IFunction io_read = new IFunction(io_read_block);
+		io_read.setName("IO.Read");
+		io_read.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		io_read.setNativ(true);
+		io_read.setRunnable(() -> {
+			if(io_read.getParameters().size() == 1) {
+				Object reader = io_read.getParameters().get(0).getValue();
+				
+				if(reader instanceof InputStream) {
+					try {
+						io_read.setReturnValue(Util.readIn((InputStream) reader));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					try {
+						throw new IRuntimeException("Writer requires that the first parameter be a FileOutStream.");
+					} catch (IRuntimeException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		functions.add(io_read);
+		
+		SyntaxBlock io_filein_block1 = new SyntaxBlock();
+		IFunction file_instr1 = new IFunction(io_filein_block1);
+		file_instr1.setName("Http.Load");
+		file_instr1.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		file_instr1.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		file_instr1.setNativ(true);
+		file_instr1.setRunnable(() -> {
+			if(file_instr1.getParameters().size() == 2) {
+				String fPath = file_instr1.getParameters().get(0).getValue().toString();
+				String publicPath = file_instr1.getParameters().get(1).getValue().toString();
+				
+				File f = new File(fPath);
+				try {
+					String string = Util.readFileData(f);
+					
+					Document doc = Jsoup.parse(string, "");
+
+					Elements mouse = doc.select("link[href]");
+					for(Element e : mouse) {
+						e.attr("link", publicPath + "/" + e.attr("link"));
+						e.attr("href", publicPath + "/" + e.attr("href"));
+					}
+					
+					Elements mouse1 = doc.select("script[src]");
+					for(Element e : mouse1) {
+						e.attr("src", publicPath + "/" + e.attr("src"));
+					}
+					
+					file_instr1.setReturnValue(doc.toString());
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+		
+		functions.add(file_instr1);
+		
+		SyntaxBlock io_filein_block11 = new SyntaxBlock();
+		IFunction file_instr11 = new IFunction(io_filein_block11);
+		file_instr11.setName("Http.GetParameters");
+		file_instr11.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		file_instr11.setNativ(true);
+		file_instr11.setRunnable(() -> {
+			if(file_instr11.getParameters().size() == 1) {
+				Object obj = file_instr11.getParameters().get(0).getValue();
+				
+				if(obj instanceof HttpServletRequest) {
+					HttpServletRequest req = (HttpServletRequest) obj;
+					try {
+						String read = Util.read(req.getReader());
+						file_instr11.setReturnValue(read);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		functions.add(file_instr11);
+		
+		SyntaxBlock io_filein_block111 = new SyntaxBlock();
+		IFunction file_instr111 = new IFunction(io_filein_block111);
+		file_instr111.setName("Http.GetQuery");
+		file_instr111.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		file_instr111.setNativ(true);
+		file_instr111.setRunnable(() -> {
+			if(file_instr111.getParameters().size() == 1) {
+				Object obj = file_instr111.getParameters().get(0).getValue();
+				
+				if(obj instanceof HttpServletRequest) {
+					HttpServletRequest req = (HttpServletRequest) obj;
+					file_instr111.setReturnValue(req.getQueryString());
+				}
+			}
+		});
+		
+		functions.add(file_instr111);
 		
 		SyntaxBlock pBlock11111111111111 = new SyntaxBlock();
-		IFunction println111111111 = new IFunction(pBlock11111111111111);
-		println111111111.setName("Numbers.rand");
-		println111111111.setNativ(true);
-		println111111111.setRunnable(() -> {
-			if(println111111111.getParameters().size() == 0) {
-				println111111111.setReturnValue(new Random().nextInt(Integer.MAX_VALUE));
+		IFunction tuple_index1 = new IFunction(pBlock11111111111111);
+		tuple_index1.setName("Numbers.Rand");
+		tuple_index1.setNativ(true);
+		tuple_index1.setRunnable(() -> {
+			if(tuple_index1.getParameters().size() == 0) {
+				tuple_index1.setReturnValue(new Random().nextInt(Integer.MAX_VALUE));
 			} else {
 				try {
 					throw new IRuntimeException("Invalid Parameter Count");
@@ -479,7 +736,7 @@ public class ValueHandler {
 			}
 		});
 		
-		functions.add(println111111111);
+		functions.add(tuple_index1);
 		
 		ICategory cat = new ICategory("Http.GetHandler", 4);
 		ValueHandler.categories.add(cat);
@@ -753,6 +1010,7 @@ public class ValueHandler {
 	}
 	
 	public static Object getFunctionCall(String str, DynamicParser parser) throws IRuntimeException {
+		//System.out.println(str);
 		IFunction func = SyntaxHandler.parseFunctionCall(str, parser);
 		return func.getReturnValue();
 	}

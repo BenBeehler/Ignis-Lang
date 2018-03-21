@@ -66,5 +66,6 @@
 	<classpathentry kind="lib" path="C:/Users/benbe/Desktop/jetty-distribution-9.4.8.v20171121/jetty-distribution-9.4.8.v20171121/lib/websocket/websocket-common-9.4.8.v20171121.jar"/>
 	<classpathentry kind="lib" path="C:/Users/benbe/Desktop/jetty-distribution-9.4.8.v20171121/jetty-distribution-9.4.8.v20171121/lib/websocket/websocket-server-9.4.8.v20171121.jar"/>
 	<classpathentry kind="lib" path="C:/Users/benbe/Desktop/jetty-distribution-9.4.8.v20171121/jetty-distribution-9.4.8.v20171121/lib/websocket/websocket-servlet-9.4.8.v20171121.jar"/>
+	<classpathentry kind="lib" path="C:/Users/benbe/Desktop/Projects/Ignis/dependencies/jsoup-1.11.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

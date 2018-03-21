@@ -198,9 +198,9 @@ public class SyntaxHandler {
 					.replaceFirst("=", "").trim();
 				
 			if(!value.equals("")) {
-				/*if(!ValueHandler.isValid(value, variable.getType()))
-					throw new IRuntimeException("Given variable value does not match assigned type.");*/
-				Object val = ValueHandler.getValue(value).getValue();
+				if(!ValueHandler.isValid(value, variable.getType(), parser.getBlock()))
+					throw new IRuntimeException("Given variable value does not match assigned type.");
+				Object val = ValueHandler.getValue(value, parser).getValue();
 				variable.setValue(val);
 			}
 				
