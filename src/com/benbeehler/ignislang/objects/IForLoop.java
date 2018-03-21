@@ -18,7 +18,19 @@ public class IForLoop extends ICondition {
 	
 	@Override
 	public boolean isExecute() {
-		return ValueHandler.getBoolean(rawBoolean);
+		if(isNormal()) {
+			if(ValueHandler.isFunctionCall(rawBoolean, this.getDynParser())) {
+				try {
+					return ValueHandler.getBoolean(ValueHandler.getFunctionCall(rawBoolean, this.getDynParser()).toString(), this.getDynParser());
+				} catch (IRuntimeException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			return ValueHandler.getBoolean(rawBoolean, this.getDynParser());
+		} else {
+			return !ValueHandler.getBoolean(rawBoolean, this.getDynParser());
+		}
 	}
 	
 	@Override

@@ -193,14 +193,15 @@ public class SyntaxHandler {
 					.stream().filter(obj -> obj.getName()
 							.equalsIgnoreCase(name))
 					.findAny().get();
-				
-			String value = string.replace(props, "")
+			
+			String value = string.replaceFirst(props, "")
 					.replaceFirst("=", "").trim();
-				
+			
+			Object val = ValueHandler.getValue(value, parser).getValue();
+			
 			if(!value.equals("")) {
-				if(!ValueHandler.isValid(value, variable.getType(), parser.getBlock()))
+				if(!ValueHandler.isValid(val.toString(), variable.getType(), parser.getBlock()))
 					throw new IRuntimeException("Given variable value does not match assigned type.");
-				Object val = ValueHandler.getValue(value, parser).getValue();
 				variable.setValue(val);
 			}
 				

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -641,6 +642,33 @@ public class ValueHandler {
 		});
 		
 		functions.add(io_read);
+	
+		SyntaxBlock io_read_block1 = new SyntaxBlock();
+		IFunction io_read1 = new IFunction(io_read_block1);
+		io_read1.setName("IO.Files");
+		io_read1.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		io_read1.setNativ(true);
+		io_read1.setRunnable(() -> {
+			if(io_read1.getParameters().size() == 1) {
+				String fPath = io_read1.getParameters().get(0).getValue().toString();
+				
+				File file = new File(fPath);
+				
+				if(file.exists()) {
+					List<File> list = Arrays.asList(file.listFiles());
+					List<String> val = new ArrayList<>();
+					for(File f : list) {
+						val.add(f.getAbsolutePath());
+					}
+					
+					io_read1.setReturnValue(val);
+				} else {
+					io_read1.setReturnValue(new ArrayList<String>());
+				}
+			}
+		});
+		
+		functions.add(io_read1);
 		
 		SyntaxBlock io_filein_block1 = new SyntaxBlock();
 		IFunction file_instr1 = new IFunction(io_filein_block1);
@@ -834,11 +862,18 @@ public class ValueHandler {
 		String s = str;
 		if(str.equals("true") 
 				|| str.equals("false")) return true;
-		//System.out.println(str);
 		if(parser.getBlock().getVariables().stream().filter(e -> e.getName()
 				.equals(s)).findAny().isPresent()) {
 			return isBoolean(parser.getBlock().getVariables().stream().filter(e -> e.getName()
 					.equals(s)).findAny().get().getValue().toString(), parser);
+		} else if(ValueHandler.isFunctionCall(str, parser)) {
+			try {
+				return isBoolean(ValueHandler.getFunctionCall(str, parser).toString());
+			} catch (IRuntimeException e1) {
+				e1.printStackTrace();
+			}
+		} else if(str.split(" ")[0].equals("not")) {
+			return isBoolean(str.replace("not", "").trim(), parser);
 		}
 		return false;
 	}
@@ -847,6 +882,7 @@ public class ValueHandler {
 		str = str.trim();
 		if(str.equals("true") 
 				|| str.equals("false")) return true;
+		else if(str.split(" ")[0].equals("not")) return isBoolean(str.replace("not", "").trim());
 		return false;
 	}
 	
@@ -916,17 +952,26 @@ public class ValueHandler {
 		str = str.trim();
 		String s = str;
 		if(str.trim().equals("true")) return true;
+		if(str.trim().split(" ")[0].equals("not")) return !getBoolean(str.replace("not", "").trim(), parser);
 		if(parser.getBlock().getVariables().stream().filter(e -> e.getName()
 				.equals(s)).findAny().isPresent()) {
 			return getBoolean(parser.getBlock().getVariables().stream().filter(e -> e.getName()
 					.equals(s)).findAny().get().getValue().toString(), parser);
+		} else if(ValueHandler.isFunctionCall(str, parser)) {
+			try {
+				return getBoolean(ValueHandler.getFunctionCall(str, parser).toString(), parser);
+			} catch (IRuntimeException e1) {
+				e1.printStackTrace();
+			}
 		}
+		
 		return false;
 	}
 	
 	public static boolean getBoolean(String str) {
 		str = str.trim();
 		if(str.trim().equals("true")) return true;
+		if(str.trim().split(" ")[0].equals("not")) return !getBoolean(str.replace("not", "").trim());
 		return false;
 	}
 	

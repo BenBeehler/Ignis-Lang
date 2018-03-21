@@ -209,6 +209,8 @@ public class DynamicParser extends Parser {
 			
 			this.addLine();
 		}
+		
+		this.getBlock().getVariables().clear();
 	}
 	
 	public SyntaxBlock getBlock() {
