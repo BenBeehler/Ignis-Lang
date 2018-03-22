@@ -10,6 +10,7 @@ import com.benbeehler.ignislang.objects.ICondition;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IObject;
+import com.benbeehler.ignislang.objects.IRoutine;
 import com.benbeehler.ignislang.runtime.IRuntime;
 
 public class Parser {
@@ -72,6 +73,9 @@ public class Parser {
 						this.getCurrentModule().addFunction(func);
 							
 						block = func;
+					} else if(dec.contains("routine")) {
+						IRoutine obj = SyntaxHandler.parseRoutine(ln, this);
+						block = obj;
 					} else if(dec.contains("module")) {
 						//new module 
 						IModule module = SyntaxHandler.parseModule(ln, this);
@@ -130,7 +134,7 @@ public class Parser {
 				} else {
 					throw new ISyntaxException("Invalid end body statement", this);
 				}
-			} else {
+			} else  {
 				current.addLine(ln);
 			}
 			

@@ -9,6 +9,7 @@ import com.benbeehler.ignislang.objects.ICategory;
 import com.benbeehler.ignislang.objects.IForLoop;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
+import com.benbeehler.ignislang.objects.IRoutine;
 import com.benbeehler.ignislang.objects.IVariable;
 import com.benbeehler.ignislang.runtime.IRuntime;
 import com.benbeehler.ignislang.runtime.ValueHandler;
@@ -67,6 +68,15 @@ public class DynamicParser extends Parser {
 						if(b.isExecute()) {
 							if(b instanceof IForLoop) {
 								b.execute();
+							} else if(b instanceof IRoutine) {
+								new Thread(() -> {
+									DynamicParser parser = new DynamicParser(b, this.getRuntime());
+									try {
+										parser.start();
+									} catch (IRuntimeException e1) {
+										e1.printStackTrace();
+									}
+								}).start();;
 							} else {
 								DynamicParser parser = new DynamicParser(b, this.getRuntime());
 								parser.start();

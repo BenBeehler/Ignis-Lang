@@ -13,16 +13,20 @@ public class Ignis {
 		 * program starting point
 		 */
 		
-		ValueHandler.init();
-		
-		IRuntime main = 
-				new IRuntime(new File("c:/users/benbe/desktop/ignis-script.ig"));
-		
-		try {
-			main.start();
-		} catch(IRuntimeException e) {
-			e.printStackTrace();
-		};
+		if(args.length > 0) {
+			ValueHandler.init();
+			
+			IRuntime main = 
+					new IRuntime(new File(args[0]));
+			
+			try {
+				main.start();
+			} catch(IRuntimeException e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.out.println("The Ignis Programming Language " + Ref.VERSION);
+		}
 	}
 	
 	public static long time() {

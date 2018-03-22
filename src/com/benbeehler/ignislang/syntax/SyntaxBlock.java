@@ -57,8 +57,12 @@ public class SyntaxBlock {
 	}
 	
 	public void execute() {
-		/*Parser parser = new Parser(this.getLines(), runtime);
-		parser.start();*/
+		Parser parser = new Parser(this.getLines(), runtime);
+		try {
+			parser.start();
+		} catch (IRuntimeException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void execute(SyntaxBlock main) {
@@ -68,8 +72,9 @@ public class SyntaxBlock {
 	}
 	
 	public static SyntaxBlock importFileIntoBody(File file) throws IRuntimeException {
-		String[] input = Util.readFile(file)
-				.toArray(new String[Util.readFile(file).size()]);
+		List<String> list = Util.readFile(file);
+		String[] input = list
+				.toArray(new String[list.size()]);
 		
 		Tokenizer tok = new Tokenizer(input);
 		SyntaxBlock block = new SyntaxBlock();

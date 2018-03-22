@@ -8,6 +8,7 @@ import com.benbeehler.ignislang.objects.IForLoop;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IModule;
 import com.benbeehler.ignislang.objects.IObject;
+import com.benbeehler.ignislang.objects.IRoutine;
 import com.benbeehler.ignislang.objects.IVariable;
 import com.benbeehler.ignislang.objects.Scope;
 import com.benbeehler.ignislang.runtime.ValueHandler;
@@ -329,5 +330,15 @@ public class SyntaxHandler {
 		condition.setRawBoolean(line);
 		condition.setId(Util.generateID());
 		return condition;
+	}
+	
+	public static IRoutine parseRoutine(String line, Parser parser) {
+		IRoutine routine = new IRoutine();
+		routine.setExecute(true);
+		routine.setRuntime(parser.getRuntime());
+		line = line.replaceFirst("routine", "").replaceFirst("def", "").trim();
+		routine.setId(Util.generateID());
+		routine.setName("routine: " + routine.getId());
+		return routine;
 	}
 }

@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Random;
 
@@ -284,7 +285,7 @@ public class ValueHandler {
 				Object one = println1111111.getParameters().get(0).getValue();
 				Object two = println1111111.getParameters().get(1).getValue();
 				
-				if(one instanceof ArrayList<?>) {
+				if(one instanceof ArrayList) {
 					@SuppressWarnings("unchecked")
 					List<Object> list = (ArrayList<Object>) one;
 					if(isInteger(two.toString())) {
@@ -785,10 +786,14 @@ public class ValueHandler {
 	}
 	
 	public static String calc(String in, List<IVariable> variables) throws ScriptException {
-		for(IVariable v : variables) {
-			if(in.contains(v.getName())) {
-				in = in.replace(v.getName(), v.getValue().toString());
+		try {
+			for(IVariable v : variables) {
+				if(in.contains(v.getName())) {
+					in = in.replace(v.getName(), v.getValue().toString());
+				}
 			}
+		} catch(ConcurrentModificationException e) {
+			
 		}
 		
 		ScriptEngineManager manager = new ScriptEngineManager();
@@ -802,6 +807,7 @@ public class ValueHandler {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("js");
 		Object result = engine.eval(in);
+		
 		
 		return result.toString();
 	}
