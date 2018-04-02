@@ -24,6 +24,8 @@ public class Tokenizer {
 				if(!string) {
 					if(ch.equals(":")) {
 						array[i] = SyntaxHandler.COLON;
+					} else if(ch.equals(";")) {
+						array[i] = SyntaxHandler.SEMICOLON;
 					} else if(ch.equals("(")) {
 						array[i] = SyntaxHandler.OPEN_BRACKET;
 					} else if(ch.equals(")")) {

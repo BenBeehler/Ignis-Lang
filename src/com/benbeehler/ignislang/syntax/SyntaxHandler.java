@@ -16,14 +16,16 @@ import com.benbeehler.ignislang.utils.Util;
 
 public class SyntaxHandler {
 
-	static String COLON = "colon_tokenized_output";
-	static String OPEN_OBJ_BRACKET = "{_tokenized_output";
-	static String OPEN_BRACKET = "(_tokenized_output";
-	static String CLOSE_OBJ_BRACKET = "}_tokenized_output";
-	static String CLOSE_BRACKET = ")_tokenized_output";
-	public static String COMMA = ",_tokenized_output";
-	public static String OPEN_ARRAY_BRACKET = "[_tokenized_output";
-	public static String CLOSE_ARRAY_BRACKET = "]_tokenized_output";
+	public static final String COLON = "colon_tokenized_output";
+	public static final String SEMICOLON = "csemi_tokenized_output";
+	public static final String OPEN_OBJ_BRACKET = "{_tokenized_output";
+	static final String OPEN_BRACKET = "(_tokenized_output";
+	public static final String CLOSE_OBJ_BRACKET = "}_tokenized_output";
+	static final String CLOSE_BRACKET = ")_tokenized_output";
+	public static final String COMMA = ",_tokenized_output";
+	public static final String OPEN_ARRAY_BRACKET = "[_tokenized_output";
+	public static final String CLOSE_ARRAY_BRACKET = "]_tokenized_output";
+	public static final String ENDLINE = "IGNIS_ENDLINE_CHARACTER_☓☓☓☓☓☓☓☓";
 	
 	public static String reverse(String str) {
 		return new StringBuilder(str).reverse().toString();
@@ -101,6 +103,7 @@ public class SyntaxHandler {
 		return module;
 	}
 	
+	
 	public static IVariable parseVariable(String string, Parser parser) throws IRuntimeException {
 		string = string.trim();
 		String props = SyntaxHandler.getUntil(string, "=");
@@ -122,7 +125,7 @@ public class SyntaxHandler {
 						throw new IRuntimeException("Given variable value does not match assigned type.");*/
 					Object val = ValueHandler.getValue(value).getValue();
 					if(!ValueHandler.isValid(val.toString(), variable.getType(), parser.getCurrent())) {
-						throw new IRuntimeException("Invalid value for specified type 2");
+						throw new IRuntimeException("Invalid value for specified type");
 					}
 					variable.setValue(val);
 				}
@@ -162,7 +165,7 @@ public class SyntaxHandler {
 					
 					if(val != null) {	
 						if(!ValueHandler.isValid(val.toString(), variable.getType(), parser.getBlock())) {
-							throw new IRuntimeException("Invalid value for specified type 2");
+							throw new IRuntimeException("Invalid value for specified type");
 						}
 						
 					}
@@ -212,6 +215,30 @@ public class SyntaxHandler {
 					+ " declaration", parser);
 		}
 	}
+	
+	/*public static boolean containsDefinitionKeyword(String string) {
+		String[] array = new String[1000000];
+		
+		boolean isStr = false;
+		int i = 0;
+		for(String str : string.split("")) {
+			i++;
+			if(str.equals("\"")) {
+				isStr = !isStr;
+			}
+			
+			if(isStr) {
+				array[i] = "☓";
+			} else {
+				array[i] = str;
+			}
+			
+			i++;
+		}
+		
+		String str = SyntaxHandler.convert(array);
+		return str.contains("def") || str.contains("end");
+	}*/
 	
 	public static IVariable parseVariable(String string, IObject obj) throws IRuntimeException {
 		string = string.trim();
@@ -340,5 +367,15 @@ public class SyntaxHandler {
 		routine.setId(Util.generateID());
 		routine.setName("routine: " + routine.getId());
 		return routine;
+	}
+	
+	public static String replaceLast(String string, String toRep, String replacement) {
+		return new StringBuilder()
+				.append(new StringBuilder().append(string)
+						.reverse().toString()
+						.replaceFirst(toRep, replacement))
+				.reverse().toString();
+		
+		//Yes, I am sane
 	}
 }

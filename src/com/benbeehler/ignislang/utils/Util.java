@@ -18,12 +18,12 @@ import org.jsoup.select.Elements;
 import com.benbeehler.ignislang.exception.ErrorHandler;
 import com.benbeehler.ignislang.exception.IRuntimeException;
 import com.benbeehler.ignislang.objects.IVariable;
+import com.benbeehler.ignislang.syntax.SyntaxHandler;
 
 public class Util {
 	
 	public static List<String> readFile(File file) throws IRuntimeException {
 		List<String> result = new ArrayList<>();
-		
 		try {
 			@SuppressWarnings("resource")
 			Scanner scanner = new Scanner(file);
@@ -35,6 +35,26 @@ public class Util {
 			throw new IRuntimeException(ErrorHandler
 					.constructUnknownFileError(file));
 		}
+		
+		/*ArrayList<String> finalResult = new ArrayList<>();
+		
+		for(String string : result) {
+			if(SyntaxHandler.containsDefinitionKeyword(string)) {
+				finalResult.add(string + SyntaxHandler.ENDLINE);
+			} else if(string.trim().endsWith(";")) {
+				System.out.println("no");
+				finalResult.add(SyntaxHandler.replaceLast(string, ";", SyntaxHandler.ENDLINE));
+			}
+		}
+		
+		String newFinal = SyntaxHandler.convert(finalResult.toArray(new String[finalResult.size()]));
+		
+		List<String> finished = new ArrayList<>();
+		for(String str : newFinal.split(SyntaxHandler.ENDLINE)) {
+			finished.add(str);
+		}
+		
+		System.out.println(finished);*/
 		
 		return result;
 	}

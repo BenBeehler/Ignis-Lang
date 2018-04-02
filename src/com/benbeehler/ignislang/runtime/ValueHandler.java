@@ -10,7 +10,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.script.ScriptEngine;
@@ -26,6 +28,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.benbeehler.ignislang.exception.IRuntimeException;
+import com.benbeehler.ignislang.exception.ISyntaxException;
 import com.benbeehler.ignislang.objects.ICategory;
 import com.benbeehler.ignislang.objects.IFunction;
 import com.benbeehler.ignislang.objects.IObject;
@@ -767,7 +770,34 @@ public class ValueHandler {
 		
 		functions.add(tuple_index1);
 		
-		ICategory cat = new ICategory("Http.GetHandler", 4);
+		SyntaxBlock io_filein_block1111 = new SyntaxBlock();
+		IFunction file_instr1111 = new IFunction(io_filein_block1111);
+		file_instr1111.setName("Hash.Get");
+		file_instr1111.addParameter(new IVariable("param_1", Scope.PRIVATE));
+		file_instr1111.addParameter(new IVariable("param_2", Scope.PRIVATE));
+		file_instr1111.setNativ(true);
+		file_instr1111.setRunnable(() -> {
+			if(file_instr1111.getParameters().size() == 2) {
+				Object one = file_instr1111.getParameters().get(0).getValue();
+				Object two = file_instr1111.getParameters().get(1).getValue();
+				
+				if(one instanceof Map) {
+					@SuppressWarnings("unchecked")
+					HashMap<Object, Object> map = (HashMap<Object, Object>) one;
+					file_instr1111.setReturnValue(map.get(two));
+				} else {
+					try {
+						throw new IRuntimeException("First Given Parameter is required to be a hash.");
+					} catch (IRuntimeException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		
+		functions.add(file_instr1111);
+		
+		ICategory cat = new ICategory("Http.Handler", 4);
 		ValueHandler.categories.add(cat);
 	}
 	
@@ -874,7 +904,9 @@ public class ValueHandler {
 					.equals(s)).findAny().get().getValue().toString(), parser);
 		} else if(ValueHandler.isFunctionCall(str, parser)) {
 			try {
-				return isBoolean(ValueHandler.getFunctionCall(str, parser).toString());
+				if(ValueHandler.getFunctionCall(str, parser) != null) {
+					return isBoolean(ValueHandler.getFunctionCall(str, parser).toString());
+				}
 			} catch (IRuntimeException e1) {
 				e1.printStackTrace();
 			}
@@ -916,10 +948,36 @@ public class ValueHandler {
 			string = string.replace(SyntaxHandler.OPEN_ARRAY_BRACKET, "")
 					.replace(SyntaxHandler.CLOSE_ARRAY_BRACKET, "").trim();
 			
-			String[] split = string.split(SyntaxHandler.COMMA);
+			String[] split = string.split(SyntaxHandler.SEMICOLON);
 			for(String str : split) {
 				Object obj = getValue(str, parser).getValue();
 				value.add(obj);
+			}
+		}
+		
+		return value;
+	}
+	
+	public static Map<Object, Object> getRawHash(String string, DynamicParser parser) throws IRuntimeException {
+		Map<Object, Object> value = new HashMap<>(); 
+		string = string.trim();
+		if(string.startsWith(SyntaxHandler.OPEN_OBJ_BRACKET) 
+				&& string.endsWith(SyntaxHandler.CLOSE_OBJ_BRACKET)) {
+			string = string.replace(SyntaxHandler.OPEN_OBJ_BRACKET, "")
+					.replace(SyntaxHandler.CLOSE_OBJ_BRACKET, "").trim();
+			
+			String[] split = string.split(SyntaxHandler.SEMICOLON);
+			for(String str : split) {
+				String[] spl = str.split(SyntaxHandler.COLON);
+				
+				if(spl.length == 2) {
+					Object one = ValueHandler.getValue(spl[0], parser).getValue();
+					Object two = ValueHandler.getValue(spl[1], parser).getValue();
+					
+					value.put(one, two);
+				} else {
+					throw new ISyntaxException("Hash declaration requires a key/value pair.", parser);
+				}
 			}
 		}
 		
@@ -932,10 +990,36 @@ public class ValueHandler {
 				&& string.endsWith(SyntaxHandler.CLOSE_ARRAY_BRACKET));
 	}
 	
+	public static boolean isRawHash(String string) {
+		string = string.trim();
+		return (string.startsWith(SyntaxHandler.OPEN_OBJ_BRACKET) 
+				&& string.endsWith(SyntaxHandler.CLOSE_OBJ_BRACKET));
+	}
+	
 	public static boolean isList(String string) {
 		string = string.trim();
 		return (string.startsWith("[") 
 				&& string.endsWith("]"));
+	}
+	
+	public static boolean isMap(String string) {
+		string = string.trim();
+		return (string.startsWith("{") 
+				&& string.endsWith("}"));
+	}
+	
+	public static HashMap<Object, Object> getMap(String s) {
+		HashMap<Object, Object> map = new HashMap<>();
+		s = s.replaceFirst("{", "");
+		s = SyntaxHandler.replaceLast(s, "}", "").trim();
+		String[] pairs = s.split(",");
+		for (int i=0;i<pairs.length;i++) {
+		    String pair = pairs[i];
+		    String[] keyValue = pair.split("=");
+		    map.put(keyValue[0], keyValue[1]);
+		}
+		
+		return map;
 	}
 	
 	public static int getInteger(String str) throws IRuntimeException {
@@ -1001,6 +1085,8 @@ public class ValueHandler {
 			variable.setValue(getBoolean(str));
 		} else if(isString(str)) {
 			variable.setValue(getString(str));
+		} else if(isRawHash(str)) {
+			variable.setValue(getRawHash(str, null));
 		}
 		
 		return variable;
@@ -1008,13 +1094,20 @@ public class ValueHandler {
 	
 	public static IVariable getValue(String str, SyntaxBlock block) throws IRuntimeException {
 		str = str.trim();
+		//System.out.println(str);
 		String string = str;
 		IVariable variable = new IVariable("var", Scope.PRIVATE);
 		variable.setValue("");
 		
 		//block.getVariables().forEach(e -> System.out.println(e.getName()));
 		
-		if(isInteger(string, block.getVariables())) {
+		if(block.getVariables().stream()
+				.filter(b -> b.getName().equals(string)).findFirst().isPresent()) {
+			IVariable b = block.getVariables().stream()
+					.filter(bl -> bl.getName().equals(string)).findFirst().get();
+			//System.out.println("meep " + string);
+			variable = b;
+		} else if(isInteger(string, block.getVariables())) {
 			variable.setValue(getInteger(string, block.getVariables()));
 		} else if(isDecimal(string, block.getVariables())) {
 			variable.setValue(getDecimal(string, block.getVariables()));
@@ -1022,14 +1115,10 @@ public class ValueHandler {
 			variable.setValue(getBoolean(string));
 		} else if(isString(string)) {
 			variable.setValue(getString(string));
-		} else if(block.getVariables().stream()
-				.filter(b -> b.getName().equals(string)).findAny().isPresent()) {
-			IVariable b = block.getVariables().stream()
-					.filter(bl -> bl.getName().equals(string)).findAny().get();
-			//System.out.println("meep " + string);
-			variable = b;
 		} else if(isRawList(string)) {
 			variable.setValue(getRawList(string, block.getDynParser()));
+		} else if(isRawHash(string)) {
+			variable.setValue(getRawHash(string, block.getDynParser()));
 		} else if(string.startsWith("new")) {
 			String inst = string.replaceFirst("new", "").trim();
 			
@@ -1087,6 +1176,8 @@ public class ValueHandler {
 			variable.setValue(getRawList(str, parser));
 		} else if(isFunctionCall(str, parser)) {
 			variable.setValue(getFunctionCall(str, parser));
+		} else if(isRawHash(str)) {
+			variable.setValue(getRawHash(str, parser));
 		} else if(str.startsWith("new")) {
 			String inst = str.replaceFirst("new", "").trim();
 			
@@ -1138,6 +1229,8 @@ public class ValueHandler {
 			return getType(func.getReturnValue().toString(), block);
 		} else if(isString("\"" + str + "\"")) {
 			return STRING;
+		} else if(isRawHash(str)) {
+			return HASH;
 		}
 		
 		return OBJECT;
@@ -1154,6 +1247,8 @@ public class ValueHandler {
 			return STRING;
 		} else if(isRawList(str)) {
 			return TUPLE;
+		} else if(isRawHash(str)) {
+			return HASH;
 		}
 		
 		return OBJECT;
@@ -1168,6 +1263,8 @@ public class ValueHandler {
 			return isInteger(pVal);
 		} else if(type == ValueHandler.TUPLE) {
 			return isList(pVal);
+		} else if(type == ValueHandler.HASH) {
+			return isMap(pVal);
 		} else if(type == ValueHandler.STRING) {
 			return isString("\"" + pVal + "\"");
 		} else if(type == ValueHandler.OBJECT) {

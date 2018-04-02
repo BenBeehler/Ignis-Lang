@@ -34,19 +34,20 @@ public class DynamicParser extends Parser {
 	public void start() throws IRuntimeException {
 		//System.out.println("parsing " + block.getName());
 		this.setCurrent(this.getBlock());
+		
+		List<SyntaxBlock> all = new ArrayList<>();
+		all.addAll(getRuntime().getNecessary());
+		all.addAll(getRuntime().getImported());
+		all.addAll(block.getSubblocks());
+		this.getRuntime().getNecessary().forEach(e -> {
+			all.addAll(SyntaxBlock.extractAll(e));
+		});
+		
 		for(String line : block.getLines()) {
 			line = line.trim();
 			String[] split = line.split(" ");
 			String[] spl = line.split("=");
 			String first = split[0];
-			
-			List<SyntaxBlock> all = new ArrayList<>();
-			all.addAll(getRuntime().getNecessary());
-			all.addAll(getRuntime().getImported());
-			all.addAll(block.getSubblocks());
-			this.getRuntime().getNecessary().forEach(e -> {
-				all.addAll(SyntaxBlock.extractAll(e));
-			});
 			
 			if(first.equalsIgnoreCase("CALL_BLOCK")) {
 				if(split.length == 2) {

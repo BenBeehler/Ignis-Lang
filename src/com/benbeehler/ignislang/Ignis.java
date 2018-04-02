@@ -12,17 +12,24 @@ public class Ignis {
 		/*
 		 * program starting point
 		 */
-		
+
 		if(args.length > 0) {
 			ValueHandler.init();
 			
-			IRuntime main = 
-					new IRuntime(new File(args[0]));
-			
-			try {
-				main.start();
-			} catch(IRuntimeException e) {
-				e.printStackTrace();
+			File file = new File(args[0]);
+			if(file.exists()) {
+				System.setProperty("user.dir", file.getAbsolutePath());
+				
+				IRuntime main = 
+						new IRuntime(file);
+				
+				try {
+					main.start();
+				} catch(IRuntimeException e) {
+					e.printStackTrace();
+				}
+			} else {
+				throw new IRuntimeException("Specified File does not exist.");
 			}
 		} else {
 			System.out.println("The Ignis Programming Language " + Ref.VERSION);
